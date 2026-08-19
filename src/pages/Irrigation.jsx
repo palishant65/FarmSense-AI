@@ -1,4 +1,5 @@
 import { useFarm } from "../context/FarmContext";
+import drip from "../assets/drip.jpg";
 
 export default function Irrigation() {
   const { rec, addTask, setState, toast } = useFarm();
@@ -16,6 +17,7 @@ export default function Irrigation() {
   return (
     <div className="grid">
       <h2>Smart Irrigation</h2>
+      <img className="photo lg" src={drip} alt="Drip lines" />
       <div className="grid g-4">
         {[
           ["Soil moisture", `${rec.soil.moisture}%`],

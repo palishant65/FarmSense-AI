@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFarm } from "../context/FarmContext";
+import hero from "../assets/hero-farm.jpg";
+import tomato from "../assets/tomato.jpg";
+import drip from "../assets/drip.jpg";
+import leaf from "../assets/leaf.jpg";
 
 export default function Dashboard() {
   const { rec, addTask, state } = useFarm();
@@ -9,21 +13,24 @@ export default function Dashboard() {
   return (
     <div className="grid">
       <div className="hero">
-        <div className="tag">Today’s Farm Decision</div>
-        <h2 style={{ margin: "10px 0 6px", fontSize: 30 }}>{rec.recommendation}</h2>
-        <p style={{ opacity: 0.9, maxWidth: 720 }}>{rec.reason}</p>
-        <div className="row" style={{ marginTop: 16 }}>
-          <span className="tag">{rec.crop.name}</span>
-          <span className="tag">Rain {rec.weather.rainProb}%</span>
-          <span className="tag">Moisture {rec.soil.moisture}%</span>
-          <span className="tag">{rec.impact.waterSavedL}L saved</span>
-        </div>
-        <div className="row" style={{ marginTop: 16 }}>
-          <button className="btn" onClick={() => nav("/irrigation")}>Open irrigation</button>
-          <button className="btn ghost" onClick={() => addTask({ title: rec.recommendation, due: new Date().toISOString().slice(0, 10), type: "irrigation" })}>
-            Add to Tasks
-          </button>
-          <button className="btn ghost" onClick={() => setWhy((w) => !w)}>Why?</button>
+        <img className="hero-bg" src={hero} alt="" />
+        <div className="hero-inner">
+          <div className="tag">Today’s Farm Decision</div>
+          <h2 style={{ margin: "10px 0 6px", fontSize: 30 }}>{rec.recommendation}</h2>
+          <p style={{ opacity: 0.95, maxWidth: 720 }}>{rec.reason}</p>
+          <div className="row" style={{ marginTop: 16 }}>
+            <span className="tag">{rec.crop.name}</span>
+            <span className="tag">Rain {rec.weather.rainProb}%</span>
+            <span className="tag">Moisture {rec.soil.moisture}%</span>
+            <span className="tag">{rec.impact.waterSavedL}L saved</span>
+          </div>
+          <div className="row" style={{ marginTop: 16 }}>
+            <button className="btn" onClick={() => nav("/irrigation")}>Open irrigation</button>
+            <button className="btn ghost" onClick={() => addTask({ title: rec.recommendation, due: new Date().toISOString().slice(0, 10), type: "irrigation" })}>
+              Add to Tasks
+            </button>
+            <button className="btn ghost" onClick={() => setWhy((w) => !w)}>Why?</button>
+          </div>
         </div>
       </div>
       {why && (
@@ -55,19 +62,22 @@ export default function Dashboard() {
       </div>
       <div className="grid g-3">
         <div className="card">
-          <h3>Demo walkthrough</h3>
-          <p className="muted">Judge path: Dashboard → Irrigation → Doctor → Weather → Soil → Market → Copilot → Impact</p>
-          <button className="btn" onClick={() => nav("/irrigation")}>Start demo</button>
+          <img className="photo" src={drip} alt="Drip irrigation" />
+          <h3>Smart irrigation</h3>
+          <p className="muted">Judge path starts here after the decision card.</p>
+          <button className="btn" onClick={() => nav("/irrigation")}>Open</button>
         </div>
         <div className="card">
-          <h3>Farm</h3>
-          <p>{state.farm.farmer} · {state.farm.area} acres · {state.farm.crops.join(", ")}</p>
+          <img className="photo" src={tomato} alt="Tomato crop" />
+          <h3>{state.farm.farmer}</h3>
+          <p>{state.farm.area} acres · {state.farm.crops.join(", ")}</p>
           <button className="btn ghost" onClick={() => nav("/farm")}>Profile</button>
         </div>
         <div className="card">
-          <h3>Copilot preview</h3>
-          <p>“Kal paani dena chahiye?”</p>
-          <p><b>{rec.reason}</b></p>
+          <img className="photo" src={leaf} alt="Leaf scan" />
+          <h3>Crop Doctor</h3>
+          <p className="muted">Scan a leaf or use the demo image.</p>
+          <button className="btn ghost" onClick={() => nav("/doctor")}>Scan</button>
         </div>
       </div>
     </div>

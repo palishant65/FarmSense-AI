@@ -2,6 +2,11 @@ import { useState } from "react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar } from "recharts";
 import { useFarm } from "../context/FarmContext";
 import { analyzeSoil, predictYield, fields } from "../services/decisionEngine";
+import tomato from "../assets/tomato.jpg";
+import wheat from "../assets/wheat.jpg";
+import potato from "../assets/potato.jpg";
+import soilImg from "../assets/soil.jpg";
+import hero from "../assets/hero-farm.jpg";
 
 const week = [0, 1, 2, 3, 4, 5, 6].map((d) => ({ d: `D${d + 1}`, rain: 8 + d * 3, moist: 32 + d, health: 70 + d }));
 
@@ -35,6 +40,7 @@ export function Soil() {
   return (
     <div className="grid">
       <h2>Soil intelligence</h2>
+      <img className="photo lg" src={soilImg} alt="Soil sample" />
       <div className="grid g-4">
         {[["pH", s.ph], ["N", s.n], ["P", s.p], ["K", s.k], ["OC %", s.oc], ["Moisture", `${s.moisture}%`], ["Health", s.health]].map(([k, v]) => (
           <div className="card" key={k}><div className="muted">{k}</div><div className="kpi">{v}</div></div>
@@ -55,9 +61,9 @@ export function Soil() {
 export function Crops() {
   const { rec } = useFarm();
   const cards = [
-    { name: "Tomato", health: 78, moisture: rec.soil.moisture, risk: 34, stage: "Fruit set" },
-    { name: "Wheat", health: 84, moisture: 44, risk: 12, stage: "Tillering" },
-    { name: "Potato", health: 71, moisture: 41, risk: 22, stage: "Tuber bulking" },
+    { name: "Tomato", health: 78, moisture: rec.soil.moisture, risk: 34, stage: "Fruit set", img: tomato },
+    { name: "Wheat", health: 84, moisture: 44, risk: 12, stage: "Tillering", img: wheat },
+    { name: "Potato", health: 71, moisture: 41, risk: 22, stage: "Tuber bulking", img: potato },
   ];
   return (
     <div className="grid">
@@ -67,6 +73,7 @@ export function Crops() {
           const y = predictYield({ crop: c.name, health: c.health, moisture: c.moisture });
           return (
             <div className="card" key={c.name}>
+              <img className="photo" src={c.img} alt={c.name} />
               <h3>{c.name}</h3>
               <p>Health {c.health} · Moisture {c.moisture}% · Risk {c.risk}%</p>
               <p>Stage: {c.stage}</p>
@@ -84,11 +91,11 @@ export function Crops() {
 
 export function FarmMap() {
   const { rec, addTask } = useFarm();
-  const [sel, setSel] = useStateField();
+  const [sel, setSel] = useState(fields[0]);
   return (
     <div className="grid">
       <h2>Farm map</h2>
-      <div className="map">
+      <div className="map" style={{ backgroundImage: `url(${hero})`, backgroundSize: "cover" }}>
         {fields.map((f) => (
           <div key={f.id} className="plot" style={{ left: f.x, top: f.y, width: f.w, height: f.h }} onClick={() => setSel(f)}>
             <b>{f.name}</b><br />{f.crop}
@@ -106,4 +113,3 @@ export function FarmMap() {
     </div>
   );
 }
-
