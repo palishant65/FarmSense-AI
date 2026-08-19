@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFarm } from "../context/FarmContext";
 import { analyzeCropImage, fields } from "../services/decisionEngine";
+import leaf from "../assets/leaf.jpg";
 
 export default function Doctor() {
   const { state, setState, addTask, toast } = useFarm();
@@ -33,6 +34,7 @@ export default function Doctor() {
             run("drop");
           }}
         >
+          <img className="photo" src={leaf} alt="Demo leaf" style={{ marginBottom: 12 }} />
           {busy ? <p>Scanning leaf veins & lesions…</p> : <p>Drag & drop a leaf photo, or use camera</p>}
           <div className="row" style={{ justifyContent: "center", marginTop: 10 }}>
             <button className="btn" onClick={() => inp.current.click()}>Upload</button>
