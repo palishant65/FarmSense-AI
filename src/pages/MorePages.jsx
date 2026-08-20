@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LineChart, Line, ResponsiveContainer, XAxis, Tooltip, BarChart, Bar, Legend } from "recharts";
 import { useFarm } from "../context/FarmContext";
 import { answerFarmQuestion, schemes, profitSim, predictYield } from "../services/decisionEngine";
+import { authApi, farmApi, aiApi, dataApi, getToken, setToken } from "../services/api";
 
 const chart = (n) =>
   Array.from({ length: n }, (_, i) => ({
@@ -118,15 +119,24 @@ export function Assistant() {
   const [lang, setLang] = useState("en-IN");
   const [log, setLog] = useState([{ role: "ai", text: rec.reason }]);
   const [q, setQ] = useState("");
-  const ask = (text = q) => {
-    const a = answerFarmQuestion(text, rec);
-    setLog((l) => [...l, { role: "me", text }, { role: "ai", text: a }]);
-    setQ("");
+  const speak = (a) => {
     if (window.speechSynthesis) {
       const u = new SpeechSynthesisUtterance(a);
       u.lang = lang;
       window.speechSynthesis.speak(u);
     }
+  };
+  const ask = async (text = q) => {
+    let a = answerFarmQuestion(text, rec);
+    if (getToken()) {
+      try {
+        const out = await aiApi.copilot({ question: text, rec, lang });
+        a = out.text || a;
+      } catch { /* local */ }
+    }
+    setLog((l) => [...l, { role: "me", text }, { role: "ai", text: a }]);
+    setQ("");
+    speak(a);
   };
   const listen = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -142,7 +152,7 @@ export function Assistant() {
   return (
     <div className="grid">
       <h2>Farm Copilot</h2>
-      <p className="muted">Answers use the same Decision Engine as the dashboard. Never contradicts today’s call.</p>
+      <p className="muted">Answers use the same Decision Engine as the dashboard.</p>
       <div className="row">
         {[["en-IN", "English"], ["hi-IN", "Hindi"], ["ta-IN", "Tamil"]].map(([v, l]) => (
           <button key={v} className={lang === v ? "btn" : "btn ghost"} onClick={() => setLang(v)}>{l}</button>
@@ -165,43 +175,61 @@ export function Assistant() {
 export function Tasks() {
   const { state, setState, addTask } = useFarm();
   const [title, setTitle] = useState("");
-  const done = state.tasks.filter((t) => t.done).length;
+  const tasks = state?.tasks || [];
+  const done = tasks.filter((t) => t.done).length;
   return (
     <div className="grid">
       <h2>Tasks & calendar</h2>
-      <div className="progress"><span style={{ width: `${(done / Math.max(1, state.tasks.length)) * 100}%` }} /></div>
-      <p>{done}/{state.tasks.length} complete</p>
+      <div className="progress"><span style={{ width: `${(done / Math.max(1, tasks.length)) * 100}%` }} /></div>
+      <p>{done}/{tasks.length} complete</p>
       <div className="row">
         <input className="input" style={{ flex: 1 }} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New task" />
         <button className="btn" onClick={() => { addTask({ title, due: new Date().toISOString().slice(0, 10), type: "general" }); setTitle(""); }}>Add</button>
       </div>
-      {state.tasks.map((t) => (
+      {tasks.map((t) => (
         <div className="card row" key={t.id} style={{ justifyContent: "space-between" }}>
-          <label><input type="checkbox" checked={t.done} onChange={() => setState((s) => ({ ...s, tasks: s.tasks.map((x) => x.id === t.id ? { ...x, done: !x.done } : x) }))} /> {t.title}</label>
+          <label><input type="checkbox" checked={t.done} onChange={() => {
+            const done = !t.done;
+            setState((s) => ({ ...s, tasks: (s.tasks || []).map((x) => x.id === t.id ? { ...x, done } : x) }));
+            if (getToken() && (t._id || t.id)) dataApi.patchTask(t._id || t.id, { done }).catch(() => {});
+          }} /> {t.title}</label>
           <span className="muted">{t.due}</span>
-          <button className="btn ghost" onClick={() => setState((s) => ({ ...s, tasks: s.tasks.filter((x) => x.id !== t.id) }))}>Delete</button>
+          <button className="btn ghost" onClick={() => {
+            setState((s) => ({ ...s, tasks: (s.tasks || []).filter((x) => x.id !== t.id) }));
+            if (getToken() && (t._id || t.id)) dataApi.delTask(t._id || t.id).catch(() => {});
+          }}>Delete</button>
         </div>
       ))}
     </div>
   );
 }
 
+
 export function Alerts() {
-  const { alerts, setState } = useFarm();
+  const { alerts, rec, weather } = useFarm();
   const nav = useNavigate();
+  const fallback = [
+    { id: "a1", level: "warning", title: rec?.recommendation || "Check irrigation today", to: "/irrigation" },
+    { id: "a2", level: "warning", title: "Rain probability 65%", to: "/weather" },
+    { id: "a3", level: "warning", title: "Tomato blight risk 34% on Field A", to: "/doctor" },
+    { id: "a4", level: "info", title: "Canopy heat 29°C", to: "/weather" },
+    { id: "a5", level: "info", title: "Tomato mandi price update", to: "/market" },
+    { id: "a6", level: "info", title: "Field B soil test due", to: "/soil" },
+    { id: "a7", level: "info", title: "Open farm tasks", to: "/tasks" },
+  ];
+  const list = alerts && alerts.length ? alerts : fallback;
   return (
     <div className="grid">
       <h2>Alerts</h2>
-      <button className="btn ghost" onClick={() => setState((s) => ({ ...s, alertsRead: alerts.map((a) => a.id) }))}>Mark all read</button>
-      {alerts.map((a) => (
-        <div className="card row" key={a.id} style={{ justifyContent: "space-between", opacity: a.read ? 0.6 : 1 }}>
+      {list.map((a) => (
+        <div className="card row" key={a.id} style={{ justifyContent: "space-between" }}>
           <div>
-            <span className={`tag ${a.level === "critical" ? "danger" : a.level === "warning" ? "warn" : "info"}`}>{a.level}</span>
+            <span className="tag">{a.level}</span>
             <b> {a.title}</b>
           </div>
           <div className="row">
-            <button className="btn ghost" onClick={() => nav(a.to)}>Open</button>
-            <button className="btn ghost" onClick={() => setState((s) => ({ ...s, alertsRead: [...new Set([...s.alertsRead, a.id])] }))}>Read</button>
+            <button type="button" className="btn ghost" onClick={() => nav(a.to || "/")}>Open</button>
+            <button type="button" className="btn" onClick={() => nav(a.to || "/")}>Read</button>
           </div>
         </div>
       ))}
@@ -288,18 +316,46 @@ export function FarmPage() {
           <label key={k}>{l}<input className="input" value={f[k]} onChange={(e) => set(k, e.target.value)} /></label>
         ))}
         <label>Area acres<input className="input" type="number" value={f.area} onChange={(e) => set("area", +e.target.value)} /></label>
-        <button className="btn" onClick={() => toast("Farm saved")}>Save</button>
+        <button className="btn" onClick={() => { toast("Farm saved"); if (getToken()) farmApi.save(f).catch(() => {}); }}>Save</button>
       </div>
     </div>
   );
 }
 
 export function Settings() {
-  const { state, setState, setTheme, toast } = useFarm();
+  const { state, setState, setTheme, toast, user, setUser } = useFarm();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const doAuth = async (mode) => {
+    try {
+      const d = mode === "login"
+        ? await authApi.login({ email, password })
+        : await authApi.register({ name: name || "Farmer", email, password });
+      setToken(d.token);
+      setUser(d.user);
+      toast(mode === "login" ? "Logged in" : "Registered");
+    } catch (e) {
+      toast(e.message);
+    }
+  };
   return (
     <div className="grid">
       <h2>Settings</h2>
       <div className="card grid">
+        <h3>Account</h3>
+        {user ? <p>Signed in as {user.name} ({user.email})</p> : (
+          <>
+            <input className="input" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <input className="input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <div className="row">
+              <button className="btn" onClick={() => doAuth("login")}>Login</button>
+              <button className="btn ghost" onClick={() => doAuth("register")}>Register</button>
+            </div>
+          </>
+        )}
+        {user && <button className="btn ghost" onClick={() => { setToken(null); setUser(null); toast("Logged out"); }}>Logout</button>}
         <label>Language
           <select className="input" value={state.farm.language} onChange={(e) => setState((s) => ({ ...s, farm: { ...s.farm, language: e.target.value } }))}>
             <option value="en">English</option><option value="hi">Hindi</option><option value="ta">Tamil</option>
@@ -310,7 +366,7 @@ export function Settings() {
           <button className="btn ghost" onClick={() => { setTheme("dark"); document.documentElement.dataset.theme = "dark"; }}>Dark</button>
         </div>
         <label><input type="checkbox" checked={state.offline} onChange={(e) => setState((s) => ({ ...s, offline: e.target.checked }))} /> Force offline / queued sync</label>
-        <p className="muted">Notifications, metric units, device pairing and privacy stay on-device. No API keys required.</p>
+        <p className="muted">Notifications, metric units, device pairing and privacy stay on-device.</p>
         <button className="btn" onClick={() => { localStorage.clear(); toast("Local data cleared"); location.reload(); }}>Clear local data</button>
       </div>
     </div>

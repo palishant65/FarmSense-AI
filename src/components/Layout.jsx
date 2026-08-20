@@ -28,7 +28,8 @@ const more = [
 ];
 
 export default function Layout() {
-  const { rec, toast, toasts, online, state, alerts, weather } = useFarm();
+  const farm = useFarm() || {};
+  const { rec, toast, toasts, online, state, alerts, weather } = farm;
   const [pal, setPal] = useState(false);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
@@ -36,8 +37,8 @@ export default function Layout() {
   const [menu, setMenu] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const nav = useNavigate();
-  const unread = alerts.filter((a) => !a.read).length;
-  const name = state.farm.farmer || "Farmer";
+  const unread = (alerts || []).filter((a) => !a.read).length;
+  const name = state?.farm?.farmer || "Farmer";
   const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   useEffect(() => {
@@ -60,11 +61,11 @@ export default function Layout() {
   const items = [
     ...primary.map(([to, label]) => ({ to, label, group: "Pages" })),
     ...more.map(([to, label]) => ({ to, label, group: "More" })),
-    ...state.tasks.map((t) => ({ to: "/tasks", label: t.title, group: "Tasks" })),
-    ...schemes.map((s) => ({ to: "/schemes", label: s.name, group: "Schemes" })),
-    ...alerts.map((a) => ({ to: a.to, label: a.title, group: "Alerts" })),
-    { to: "/", label: rec.recommendation, group: "Recommendation" },
-  ].filter((i) => i.label.toLowerCase().includes(q.toLowerCase()));
+    ...(state?.tasks || []).map((t) => ({ to: "/tasks", label: t.title, group: "Tasks" })),
+    ...(schemes || []).map((s) => ({ to: "/schemes", label: s.name, group: "Schemes" })),
+    ...(alerts || []).map((a) => ({ to: a.to, label: a.title, group: "Alerts" })),
+    { to: "/", label: rec?.recommendation || "Dashboard", group: "Recommendation" },
+  ].filter((i) => (i.label || "").toLowerCase().includes(q.toLowerCase()));
 
   const SidebarInner = (
     <>
@@ -102,7 +103,7 @@ export default function Layout() {
           <span className="avatar">{initials}</span>
           <span>
             <strong>{name}</strong>
-            <small>{state.farm.location}</small>
+            <small>{state?.farm?.location}</small>
           </span>
         </button>
       </div>
@@ -122,8 +123,8 @@ export default function Layout() {
             <strong>FarmSense AI</strong>
           </div>
           <button className="search-btn" onClick={() => setPal(true)}>Search farm, tasks, schemes…  ⌘K</button>
-          <span className="tag hide-sm">{state.farm.location}</span>
-          <span className="tag">{weather.temp}°C</span>
+          <span className="tag hide-sm">{state?.farm?.location}</span>
+          <span className="tag">{weather?.temp ?? "--"}°C</span>
           <div className="head-user">
             <button type="button" className="user-chip" onClick={() => setMenu((v) => !v)}>
               <span className="avatar">{initials}</span>
@@ -143,7 +144,7 @@ export default function Layout() {
         </div>
       </div>
       <div className="toast-wrap">
-        {toasts.map((t) => (
+        {(toasts || []).map((t) => (
           <div className="toast" key={t.id}>{t.msg}</div>
         ))}
       </div>
@@ -169,7 +170,7 @@ export default function Layout() {
                   onClick={() => {
                     nav(i.to);
                     setPal(false);
-                    toast(`Opened ${i.label}`);
+                    toast?.(`Opened ${i.label}`);
                   }}
                 >
                   <span className="muted" style={{ width: 110 }}>{i.group}</span>

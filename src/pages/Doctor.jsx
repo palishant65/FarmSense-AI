@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFarm } from "../context/FarmContext";
 import { analyzeCropImage, fields } from "../services/decisionEngine";
+import { aiApi, getToken } from "../services/api";
 import leaf from "../assets/leaf.jpg";
 
 export default function Doctor() {
@@ -11,29 +12,29 @@ export default function Doctor() {
   const inp = useRef();
   const nav = useNavigate();
 
-  const run = (src = "upload") => {
+  const run = async (src = "upload") => {
     setBusy(true);
     toast("Scanning canopy…");
-    setTimeout(() => {
-      const r = analyzeCropImage({ field: "Field A — Tomato", src });
-      setCur(r);
-      setState((s) => ({ ...s, scans: [r, ...s.scans].slice(0, 20) }));
-      setBusy(false);
-    }, 1100);
+    let r = analyzeCropImage({ field: "Field A — Tomato", src });
+    if (getToken()) {
+      try {
+        const form = new FormData();
+        form.append("field", "Field A — Tomato");
+        r = await aiApi.disease(form);
+        r.at = r.at || Date.now();
+        r.id = r._id || r.id;
+      } catch { /* local */ }
+    }
+    setCur(r);
+    setState((s) => ({ ...s, scans: [r, ...s.scans].slice(0, 20) }));
+    setBusy(false);
   };
 
   return (
     <div className="grid">
       <h2>AI Crop Doctor</h2>
       <div className="grid g-2">
-        <div
-          className="drop"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            run("drop");
-          }}
-        >
+        <div className="drop" onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); run("drop"); }}>
           <img className="photo" src={leaf} alt="Demo leaf" style={{ marginBottom: 12 }} />
           {busy ? <p>Scanning leaf veins & lesions…</p> : <p>Drag & drop a leaf photo, or use camera</p>}
           <div className="row" style={{ justifyContent: "center", marginTop: 10 }}>
