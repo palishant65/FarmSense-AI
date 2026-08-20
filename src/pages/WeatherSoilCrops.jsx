@@ -2,6 +2,7 @@ import { useState } from "react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar } from "recharts";
 import { useFarm } from "../context/FarmContext";
 import { analyzeSoil, predictYield, fields } from "../services/decisionEngine";
+import { aiApi, getToken } from "../services/api";
 import tomato from "../assets/tomato.jpg";
 import wheat from "../assets/wheat.jpg";
 import potato from "../assets/potato.jpg";
@@ -11,7 +12,8 @@ import hero from "../assets/hero-farm.jpg";
 const week = [0, 1, 2, 3, 4, 5, 6].map((d) => ({ d: `D${d + 1}`, rain: 8 + d * 3, moist: 32 + d, health: 70 + d }));
 
 export function Weather() {
-  const { rec, weather, setState } = useFarm();
+  const { rec, weather, setState, forecast } = useFarm();
+  const chartData = Array.isArray(forecast) && forecast.length ? forecast : week;
   return (
     <div className="grid">
       <h2>Weather → Farm actions</h2>
@@ -28,7 +30,7 @@ export function Weather() {
         </label>
       </div>
       <div className="card" style={{ height: 260 }}>
-        <ResponsiveContainer><LineChart data={week}><XAxis dataKey="d" /><YAxis /><Tooltip /><Line dataKey="rain" stroke="#1b5e3b" /></LineChart></ResponsiveContainer>
+        <ResponsiveContainer><LineChart data={chartData}><XAxis dataKey="d" /><YAxis /><Tooltip /><Line dataKey="rain" stroke="#1b5e3b" /></LineChart></ResponsiveContainer>
       </div>
     </div>
   );
@@ -49,7 +51,14 @@ export function Soil() {
       <div className="card">
         <h3>Fertilizer recommendation</h3>
         <ul>{s.recs.map((r) => <li key={r}>{r}</li>)}</ul>
-        <button className="btn ghost" onClick={() => setState((st) => ({ ...st, sensors: { ...st.sensors, moisture: Math.max(15, st.sensors.moisture - 5) } }))}>Simulate drier soil</button>
+        <button className="btn ghost" onClick={() => {
+          setState((st) => {
+            const moisture = Math.max(15, st.sensors.moisture - 5);
+            const next = { ...st, sensors: { ...st.sensors, moisture } };
+            if (getToken()) aiApi.soil({ ...rec.soil, moisture }).catch(() => {});
+            return next;
+          });
+        }}>Simulate drier soil</button>
       </div>
       <div className="card" style={{ height: 260 }}>
         <ResponsiveContainer><BarChart data={[{ n: s.n, p: s.p, k: s.k }]}><Tooltip /><Bar dataKey="n" fill="#1b5e3b" /><Bar dataKey="p" fill="#7dcea0" /><Bar dataKey="k" fill="#2d7a4f" /></BarChart></ResponsiveContainer>

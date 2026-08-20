@@ -1,14 +1,23 @@
 import { useFarm } from "../context/FarmContext";
 import drip from "../assets/drip.jpg";
+import { farmApi, getToken } from "../services/api";
 
 export default function Irrigation() {
   const { rec, addTask, setState, toast } = useFarm();
   const setMode = (mode) => {
     if (mode === "now") {
-      setState((s) => ({ ...s, sensors: { ...s.sensors, pump: true, moisture: Math.min(70, s.sensors.moisture + 8) } }));
+      setState((s) => {
+        const sensors = { ...s.sensors, pump: true, moisture: Math.min(70, s.sensors.moisture + 8) };
+        if (getToken()) farmApi.sensors(sensors).catch(() => {});
+        return { ...s, sensors };
+      });
       toast("Pump ON — irrigating now");
     } else if (mode === "delay") {
-      setState((s) => ({ ...s, sensors: { ...s.sensors, pump: false } }));
+      setState((s) => {
+        const sensors = { ...s.sensors, pump: false };
+        if (getToken()) farmApi.sensors(sensors).catch(() => {});
+        return { ...s, sensors };
+      });
       toast("Irrigation delayed per AI");
     } else {
       toast("AI optimize scheduled for 5:30 AM");
