@@ -205,3 +205,101 @@ button, input, select, textarea { font: inherit; }
   .hero { padding: 16px; }
 }
 @media print { .sidebar, .topbar, .toast-wrap { display: none !important; } .page { max-width: none; } }
+.landing {
+  position: relative; min-height: 100vh; min-height: 100dvh;
+  display: grid; place-items: center; overflow: hidden; color: #f4fff8;
+}
+.landing-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; transform: scale(1.06);
+  animation: land-zoom 18s ease-in-out infinite alternate;
+}
+.landing-dim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(8,22,14,.55), rgba(6,18,12,.78) 55%, rgba(4,14,10,.88));
+}
+.landing-center {
+  position: relative; z-index: 2; text-align: center; padding: 28px 20px; max-width: 720px;
+  animation: land-up .7s ease both;
+}
+.landing-kicker {
+  letter-spacing: .22em; text-transform: uppercase; font-size: 12px; opacity: .85; margin: 0 0 10px;
+}
+.landing-title {
+  font-size: clamp(36px, 8vw, 72px); margin: 0; font-weight: 800; line-height: 1.05;
+  text-shadow: 0 8px 40px rgba(0,0,0,.45);
+}
+.landing-sub {
+  font-size: clamp(16px, 3vw, 22px); margin: 14px 0 28px; opacity: .95;
+}
+.landing-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.landing-btn { min-width: 140px; padding: 12px 22px; font-weight: 700; font-size: 15px; }
+.landing .btn.ghost { background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+.landing-modal { display: grid; gap: 10px; max-width: 420px; }
+@keyframes land-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes land-zoom {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.1); }
+}
+.landing {
+  position: relative; min-height: 100vh;
+  display: grid; place-items: center; overflow: hidden; color: #f4fff8;
+  background: linear-gradient(135deg, #0f3d26, #1b5e3b 45%, #2d7a4f);
+}
+.landing-dim { position: absolute; inset: 0; background: rgba(6,18,12,.45); }
+.landing-center { position: relative; z-index: 2; text-align: center; padding: 28px 20px; }
+.landing-kicker { letter-spacing: .2em; text-transform: uppercase; font-size: 12px; margin: 0 0 10px; }
+.landing-title { font-size: clamp(36px, 8vw, 72px); margin: 0; font-weight: 800; }
+.landing-sub { font-size: 20px; margin: 14px 0 28px; }
+.landing-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.landing-btn { min-width: 140px; padding: 12px 22px; font-weight: 700; }
+.landing .btn.ghost { background: rgba(255,255,255,.16); color: #fff; }
+.landing-modal { display: grid; gap: 10px; max-width: 420px; }
+.hero-land { position: relative; min-height: 100vh; overflow: hidden; color: #fff; }
+.hero-land-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-land-shade { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, rgba(8,20,12,.2), rgba(4,12,8,.5) 70%); }
+.hero-land-mid { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px 16px 24px; }
+.hero-leaf { font-size: 42px; }
+.hero-land-mid h1 { font-size: clamp(40px, 8vw, 72px); margin: 6px 0 8px; font-weight: 800; text-shadow: 0 6px 28px rgba(0,0,0,.45); }
+.hero-land-mid h1 span { color: #7dcea0; }
+.hero-tag { color: #8fe3a4; font-size: clamp(18px, 3vw, 26px); font-weight: 700; margin: 0 0 12px; }
+.hero-lead { max-width: 560px; font-size: 16px; margin: 0 0 22px; }
+.hero-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 28px; }
+.hero-login, .hero-reg { border-radius: 14px; padding: 12px 32px; font-weight: 700; font-size: 16px; cursor: pointer; }
+.hero-login { background: #5cb85c; color: #fff; border: 0; }
+.hero-reg { background: transparent; color: #fff; border: 2px solid #fff; }
+.hero-skip { background: none; border: 0; color: #c8f5d4; cursor: pointer; margin: -12px 0 18px; text-decoration: underline; }
+.hero-pills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: min(860px, 94vw); padding: 18px 12px; border-radius: 22px; background: rgba(12,32,18,.42); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.18); }
+.hero-pill { display: grid; justify-items: center; gap: 4px; padding: 8px; }
+.hero-pill b { font-size: 14px; }
+.hero-pill span { font-size: 11px; opacity: .85; max-width: 160px; }
+.hero-copy { margin: 18px 0 0; font-size: 13px; opacity: .85; }
+.hero-node { position: absolute; z-index: 2; display: grid; justify-items: center; gap: 6px; color: #e8f8ec; font-size: 12px; }
+.hero-orb { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: rgba(20,50,28,.35); border: 1px solid rgba(180,255,200,.45); }
+.landing-modal { display: grid; gap: 10px; max-width: 420px; }
+@media (max-width: 800px) { .hero-pills { grid-template-columns: 1fr 1fr; } .hero-node { display: none; } }
+.user-menu { max-height: 70vh; overflow: auto; }
+.lang-list { max-height: 220px; overflow: auto; border-top: 1px solid var(--line); }
+.hero-land-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-langs {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  max-width: 860px; margin: 16px auto 0;
+}
+.hero-langs button {
+  border: 1px solid rgba(255,255,255,.35); background: rgba(12,32,18,.4);
+  color: #e8f8ec; border-radius: 999px; padding: 4px 10px; font-size: 11px; cursor: pointer;
+}
+.hero-langs button.on { background: #5cb85c; border-color: #5cb85c; color: #fff; }
+.hero-land-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-langs {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  max-width: 860px; margin: 16px auto 0;
+}
+.hero-langs button {
+  border: 1px solid rgba(255,255,255,.35); background: rgba(12,32,18,.4);
+  color: #e8f8ec; border-radius: 999px; padding: 4px 10px; font-size: 11px; cursor: pointer;
+}
+.hero-langs button.on { background: #5cb85c; border-color: #5cb85c; color: #fff; }

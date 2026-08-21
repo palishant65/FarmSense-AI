@@ -119,12 +119,12 @@ export function analyzeSoil(soil = {}) {
     Math.max(20, Math.min(98, 100 - Math.abs(s.ph - 6.5) * 12 + s.oc * 18 + (s.n + s.p + s.k) / 8 - Math.abs(s.moisture - 40) * 0.4))
   );
   const recs = [];
-  if (s.n < 40) recs.push("Apply 20 kg/acre urea split dose");
-  if (s.p < 25) recs.push("Add DAP 15 kg/acre");
-  if (s.k < 30) recs.push("MOP 10 kg/acre before next irrigation");
-  if (s.ph < 6) recs.push("Lime 200 kg/acre to raise pH");
-  if (s.ph > 7.5) recs.push("Gypsum + organic compost to lower pH");
-  if (!recs.length) recs.push("Maintain compost 2 t/acre; NPK is balanced");
+  if (s.n < 40) recs.push("soil.urea");
+  if (s.p < 25) recs.push("soil.dap");
+  if (s.k < 30) recs.push("soil.mop");
+  if (s.ph < 6) recs.push("soil.lime");
+  if (s.ph > 7.5) recs.push("soil.gypsum");
+  if (!recs.length) recs.push("soil.ok");
   return { ...s, health, recs };
 }
 
@@ -143,9 +143,9 @@ export function predictYield({ crop = "Tomato", area = 4.5, health = 78, moistur
 }
 
 const diseases = [
-  { name: "Early blight", crop: "Tomato", severity: "Medium", conf: 86, symptoms: "Concentric brown leaf spots", causes: "Alternaria, humid canopy", actions: ["Remove infected leaves", "Mancozeb spray evening", "Improve airflow"] },
-  { name: "Late blight", crop: "Tomato", severity: "High", conf: 81, symptoms: "Water-soaked lesions", causes: "Phytophthora + rain", actions: ["Copper fungicide", "Delay overhead irrigation"] },
-  { name: "Healthy canopy", crop: "Tomato", severity: "Low", conf: 91, symptoms: "Even green leaves", causes: "Good nutrition", actions: ["Continue drip schedule"] },
+  { nameKey: "dis.early", crop: "Tomato", severityKey: "dis.med", conf: 86, symptomsKey: "dis.earlyS", causesKey: "dis.earlyC", actionKeys: ["dis.a1", "dis.a2", "dis.a3"] },
+  { nameKey: "dis.late", crop: "Tomato", severityKey: "dis.high", conf: 81, symptomsKey: "dis.lateS", causesKey: "dis.lateC", actionKeys: ["dis.a4", "dis.a5"] },
+  { nameKey: "dis.healthy", crop: "Tomato", severityKey: "dis.low", conf: 91, symptomsKey: "dis.healthyS", causesKey: "dis.healthyC", actionKeys: ["dis.a6"] },
 ];
 
 export function analyzeCropImage(meta = {}) {
@@ -154,8 +154,9 @@ export function analyzeCropImage(meta = {}) {
     id: `scan-${Date.now()}`,
     at: Date.now(),
     ...pick,
-    field: meta.field || "Field A — Tomato",
-    disclaimer: "Advisory only. Confirm with a local agri officer before spraying.",
+    fieldKey: "ui.field",
+    crop: pick.crop || "Tomato",
+    disclaimerKey: "dis.note",
   };
 }
 
@@ -165,14 +166,14 @@ export function answerFarmQuestion(q, rec) {
     return rec.reason;
   }
   if (/bimaar|disease|doctor|blight/.test(t)) {
-    return `Disease risk on ${rec.crop.name} is ${rec.crop.diseaseRisk}%. Scout Field A and add a doctor scan if spots appear.`;
+    return { kind: "disease", n: rec.crop.diseaseRisk, crop: rec.crop.name };
   }
   if (/bech|sell|mandi|price|bhav/.test(t)) {
-    return `Tomato mandi is ₹${rec.market.tomato}/kg (${rec.market.trend}). Hold 3–4 days if quality is grade A; nearby mandi spread is ₹2–4.`;
+    return { kind: "sell", n: rec.market.tomato, trend: rec.market.trend };
   }
   if (/khad|fertil|npk|soil/.test(t)) {
     const s = analyzeSoil(rec.soil);
-    return `Soil health ${s.health}/100. ${s.recs[0]}`;
+    return { kind: "soil", n: s.health, rec: s.recs[0] };
   }
   return rec.reason;
 }

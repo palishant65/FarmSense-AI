@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { FarmProvider } from "./context/FarmContext";
 import Layout from "./components/Layout";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Irrigation from "./pages/Irrigation";
 import Doctor from "./pages/Doctor";
@@ -14,8 +15,9 @@ export default function App() {
     <FarmProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route element={<Layout />}>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/farm" element={<FarmPage />} />
             <Route path="/map" element={<FarmMap />} />
             <Route path="/analytics" element={<Analytics />} />
@@ -33,8 +35,8 @@ export default function App() {
             <Route path="/iot" element={<Iot />} />
             <Route path="/crops" element={<Crops />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </FarmProvider>

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { loadState, saveState } from "../services/storage";
 import { generateFarmRecommendation, weatherBase, soilBase, marketBase } from "../services/decisionEngine";
 import { getToken, setToken, authApi, farmApi, dataApi, aiApi } from "../services/api";
+import { t as tr, RTL, applyI18nToRec } from "../i18n";
 
 const Ctx = createContext(null);
 export const useFarm = () => useContext(Ctx);
@@ -17,6 +18,11 @@ export function FarmProvider({ children }) {
   const synced = useRef(false);
 
   useEffect(() => saveState(state), [state]);
+  useEffect(() => {
+    const language = state.farm?.language || localStorage.getItem("farmsense-lang") || "en";
+    document.documentElement.lang = language;
+    document.documentElement.dir = RTL.has(language) ? "rtl" : "ltr";
+  }, [state.farm?.language]);
 
   useEffect(() => {
     const loadWx = (q = "") => {
@@ -82,7 +88,10 @@ export function FarmProvider({ children }) {
   const weather = { ...weatherBase, ...liveWeather, ...(state.weatherOverride || {}) };
   const soil = { ...soilBase, moisture: state.sensors.moisture };
   const market = { ...marketBase, ...liveMarket };
-  const rec = useMemo(
+  const lang = state.farm?.language || (typeof localStorage !== "undefined" && localStorage.getItem("farmsense-lang")) || "en";
+  const tFn = (key, vars) => tr(lang, key, vars);
+
+  const recRaw = useMemo(
     () =>
       generateFarmRecommendation({
         weather,
@@ -93,6 +102,7 @@ export function FarmProvider({ children }) {
       }),
     [weather.rainProb, weather.temp, soil.moisture, state.farm.crops, state.sensors, market.tomato]
   );
+  const rec = useMemo(() => applyI18nToRec(recRaw, tFn), [recRaw, lang]);
 
   useEffect(() => {
     if (!getToken() || !user || synced.current) return;
@@ -103,15 +113,15 @@ export function FarmProvider({ children }) {
   const alerts = useMemo(() => {
     const list = [
       { id: "a1", type: "irrigation", level: rec.action === "delay" ? "info" : "warning", title: rec.recommendation, to: "/irrigation" },
-      { id: "a2", type: "rain", level: weather.rainProb > 60 ? "warning" : "info", title: `Rain probability ${weather.rainProb}%`, to: "/weather" },
-      { id: "a3", type: "disease", level: "warning", title: "Tomato blight risk 34% on Field A", to: "/doctor" },
-      { id: "a4", type: "heat", level: weather.temp >= 35 ? "critical" : "info", title: `Canopy heat ${weather.temp}°C`, to: "/weather" },
-      { id: "a5", type: "market", level: "info", title: `Tomato ₹${market.tomato}/kg`, to: "/market" },
-      { id: "a6", type: "soil", level: "info", title: "Field B soil test due", to: "/soil" },
-      { id: "a7", type: "task", level: "info", title: "2 open farm tasks", to: "/tasks" },
+      { id: "a2", type: "rain", level: weather.rainProb > 60 ? "warning" : "info", title: tFn("alert.rain", { n: weather.rainProb }), to: "/weather" },
+      { id: "a3", type: "disease", level: "warning", title: tFn("alert.blight"), to: "/doctor" },
+      { id: "a4", type: "heat", level: weather.temp >= 35 ? "critical" : "info", title: tFn("alert.heat", { n: weather.temp }), to: "/weather" },
+      { id: "a5", type: "market", level: "info", title: tFn("alert.price", { n: market.tomato }), to: "/market" },
+      { id: "a6", type: "soil", level: "info", title: tFn("alert.soil"), to: "/soil" },
+      { id: "a7", type: "task", level: "info", title: tFn("alert.tasks"), to: "/tasks" },
     ];
-    return list.map((a) => ({ ...a, read: state.alertsRead.includes(a.id) }));
-  }, [rec, weather, state.alertsRead, market.tomato]);
+    return list.map((a) => ({ ...a, read: (state.alertsRead || []).includes(a.id) }));
+  }, [rec, weather, state.alertsRead, market.tomato, lang]);
 
   const value = {
     state,
@@ -125,16 +135,23 @@ export function FarmProvider({ children }) {
     toasts,
     online: online && !state.offline,
     setTheme: (theme) => setState((s) => ({ ...s, theme })),
+    t: tFn,
+    setLanguage: (language) => {
+      localStorage.setItem("farmsense-lang", language);
+      document.documentElement.lang = language;
+      document.documentElement.dir = RTL.has(language) ? "rtl" : "ltr";
+      setState((s) => ({ ...s, farm: { ...s.farm, language } }));
+    },
     user,
     setUser,
     addTask: (task) => {
       setState((s) => ({ ...s, tasks: [{ id: `t${Date.now()}`, done: false, ...task }, ...s.tasks] }));
-      toast("Added to tasks");
+      toast(tFn("ui.addedTasks"));
       if (getToken()) dataApi.addTask(task).catch(() => {});
     },
     saveFav: (payload) => {
       if (getToken()) dataApi.addFav({ kind: "recommendation", payload }).catch(() => {});
-      toast("Saved");
+      toast(tFn("ui.savedToast"));
     },
   };
 
