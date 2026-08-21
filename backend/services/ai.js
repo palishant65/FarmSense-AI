@@ -31,11 +31,12 @@ export async function diseaseDetection(meta) {
 }
 
 export async function copilotAnswer(question, rec) {
+  const hit = answerFarmQuestion(question, rec || {});
   if (provider() === "openai") {
-    const text = await openaiChat(`Farm copilot. Decision: ${rec?.reason}. Question: ${question}. Do not contradict the decision.`);
-    if (text) return { text, provider: "openai" };
+    const text = await openaiChat(`Farm copilot. Intent: ${hit.kind}. Use only given farm data. Decision: ${rec?.reason || "n/a"}. Question: ${question}. Answer this intent only; never give an irrigation answer unless intent is irrigate.`);
+    if (text) return { ...hit, text, provider: "openai" };
   }
-  return { text: answerFarmQuestion(question, rec || {}), provider: "local" };
+  return { ...hit, provider: "local" };
 }
 
 export async function yieldPredict(input) {
