@@ -112,6 +112,14 @@ const en = {
   "ai.sell": "Tomato mandi is ₹{n}/kg ({trend}). Hold 3–4 days if quality is grade A.",
   "ai.soil": "Soil health {n}/100. {rec}",
   "lvl.info": "info", "lvl.warning": "warning", "lvl.critical": "critical",
+  "cop.hello": "Ask about irrigation, soil, weather, pests, fertilizer or harvest. I use today’s farm decision and available numbers only.",
+  "cop.placeholder": "Ask a farming question…",
+  "cop.listening": "Listening…",
+  "cop.noVoice": "Voice is not available in this browser. Please type your question.",
+  "cop.weather": "Available farm weather: {temp}°C, rain chance {rain}%, humidity {humid}%, soil moisture {moist}%. Live station data may be missing; these are the values on this dashboard.",
+  "cop.crop": "Current crop context is {crop}. Today’s call: {rec}",
+  "cop.harvest": "{crop} is at stage {stage}. Harvest when fruit colour and firmness match market grade; do not pick only by calendar.",
+  "cop.general": "Today’s farm call: {rec}. Ask about water, soil, weather, pests, fertilizer or harvest for a more specific answer.",
 };
 
 const hi = {
@@ -174,7 +182,7 @@ const hi = {
   "ui.judge": "आज के निर्णय के बाद अगला कदम।", "ui.profile": "प्रोफ़ाइल",
   "ui.loggedIn": "लॉगिन हो गया", "ui.registered": "रजिस्टर हो गया", "ui.authFail": "प्रमाणीकरण असफल",
   "ui.sellBody": "ग्रेड-ए उपज 3–4 दिन रोकें। नज़दीकी मंडी अंतर ₹2–4।",
-  "ui.on": "चालू", "ui.off": "बंद", "ui.wait": "रुकें / बंद", "ui.now": "अभी", "ui.wet": "गीला", "ui.drySoil": "सूखा",
+  "ui.on": "चालू", "ui.off": "बंद", "ui.wait": "रुकें / बंद", "ui.now": "अभी", "ui.demoLeaf": "डेमो पत्ती", "ui.drip": "ड्रिप लाइन", "ui.wet": "गीला", "ui.drySoil": "सूखा",
   "ui.trendUp": "बढ़त", "ui.trendDown": "गिरावट", "ui.search": "खोजें…", "ui.opened": "{label} खोला",
   "ui.addedTasks": "कार्य में जोड़ा", "ui.savedToast": "सहेजा गया", "ui.costRow": "लागत", "ui.revenue": "आय",
   "ui.profit": "लाभ", "ui.perAcre": "प्रति एकड़", "ui.traditional": "पारंपरिक", "ui.rainSensor": "बारिश सेंसर",
@@ -213,6 +221,14 @@ const hi = {
   "ai.sell": "टमाटर मंडी ₹{n}/किलो ({trend})। ग्रेड ए हो तो 3–4 दिन रोकें।",
   "ai.soil": "मिट्टी स्वास्थ्य {n}/100। {rec}",
   "lvl.info": "जानकारी", "lvl.warning": "चेतावनी", "lvl.critical": "गंभीर",
+  "cop.hello": "सिंचाई, मिट्टी, मौसम, कीट, खाद या कटाई पूछें। मैं आज के खेत निर्णय और उपलब्ध संख्याएँ ही इस्तेमाल करता हूँ।",
+  "cop.placeholder": "खेती का सवाल पूछें…",
+  "cop.listening": "सुन रहा हूँ…",
+  "cop.noVoice": "इस ब्राउज़र में आवाज़ उपलब्ध नहीं। कृपया टाइप करें।",
+  "cop.weather": "उपलब्ध मौसम: {temp}°C, बारिश {rain}%, आर्द्रता {humid}%, मिट्टी नमी {moist}%. ये डैशबोर्ड मान हैं; लाइव स्टेशन न हो तो यही इस्तेमाल करें।",
+  "cop.crop": "वर्तमान फसल {crop}। आज का निर्णय: {rec}",
+  "cop.harvest": "{crop} अवस्था {stage}। रंग और मजबूती देखकर तोड़ें, केवल तारीख से नहीं।",
+  "cop.general": "आज का निर्णय: {rec}। पानी, मिट्टी, मौसम, कीट, खाद या कटाई पूछें।",
 };
 
 const pack = (o) => ({ ...en, ...o });
@@ -276,7 +292,7 @@ const bn = pack({
   "ui.judge": "আজকের সিদ্ধান্তের পরের ধাপ।", "ui.profile": "প্রোফাইল",
   "ui.loggedIn": "লগইন হয়েছে", "ui.registered": "নিবন্ধিত", "ui.authFail": "প্রমাণীকরণ ব্যর্থ",
   "ui.sellBody": "গ্রেড-এ ফসল ৩–৪ দিন রাখুন। কাছের মণ্ডির ব্যবধান ₹২–৪।",
-  "ui.on": "চালু", "ui.off": "বন্ধ", "ui.wait": "অপেক্ষা / বন্ধ", "ui.now": "এখন", "ui.wet": "ভেজা", "ui.drySoil": "শুকনো",
+  "ui.on": "চালু", "ui.off": "বন্ধ", "ui.wait": "অপেক্ষা / বন্ধ", "ui.now": "এখন", "ui.demoLeaf": "ডেমো পাতা", "ui.drip": "ড্রিপ লাইন", "ui.wet": "ভেজা", "ui.drySoil": "শুকনো",
   "ui.trendUp": "বৃদ্ধি", "ui.trendDown": "পতন", "ui.search": "খুঁজুন…", "ui.opened": "{label} খোলা",
   "ui.addedTasks": "কাজে যোগ হয়েছে", "ui.savedToast": "সংরক্ষিত", "ui.costRow": "খরচ", "ui.revenue": "আয়",
   "ui.profit": "লাভ", "ui.perAcre": "প্রতি একর", "ui.traditional": "ঐতিহ্যবাহী", "ui.rainSensor": "বৃষ্টি সেন্সর",
@@ -315,6 +331,14 @@ const bn = pack({
   "ai.sell": "টমেটো মণ্ডি ₹{n}/কেজি ({trend})। গ্রেড এ হলে ৩–৪ দিন রাখুন।",
   "ai.soil": "মাটির স্বাস্থ্য {n}/১০০। {rec}",
   "lvl.info": "তথ্য", "lvl.warning": "সতর্কতা", "lvl.critical": "গুরুতর",
+  "cop.hello": "সেচ, মাটি, আবহাওয়া, পোকা, সার বা কাটা নিয়ে জিজ্ঞাসা করুন। আজকের খামার সিদ্ধান্ত ও উপলব্ধ সংখ্যাই ব্যবহার করি।",
+  "cop.placeholder": "চাষের প্রশ্ন লিখুন…",
+  "cop.listening": "শুনছি…",
+  "cop.noVoice": "এই ব্রাউজারে ভয়েস নেই। টাইপ করুন।",
+  "cop.weather": "উপলব্ধ আবহাওয়া: {temp}°C, বৃষ্টি {rain}%, আর্দ্রতা {humid}%, মাটির আর্দ্রতা {moist}%. ড্যাশবোর্ডের মান।",
+  "cop.crop": "বর্তমান ফসল {crop}। আজকের সিদ্ধান্ত: {rec}",
+  "cop.harvest": "{crop} পর্যায় {stage}। রং ও শক্ততা দেখে তুলুন।",
+  "cop.general": "আজকের সিদ্ধান্ত: {rec}। জল, মাটি, আবহাওয়া, পোকা, সার বা কাটা জিজ্ঞাসা করুন।",
 });
 
 const mr = pack({
@@ -376,7 +400,7 @@ const mr = pack({
   "ui.judge": "आजच्या निर्णयानंतर पुढचे पाऊल.", "ui.profile": "प्रोफाइल",
   "ui.loggedIn": "लॉगिन झाले", "ui.registered": "नोंदणी झाली", "ui.authFail": "प्रमाणीकरण अयशस्वी",
   "ui.sellBody": "ग्रेड-ए माल ३–४ दिवस ठेवा. जवळच्या मंडीचा फरक ₹२–४.",
-  "ui.on": "चालू", "ui.off": "बंद", "ui.wait": "थांबा / बंद", "ui.now": "आता", "ui.wet": "ओले", "ui.drySoil": "कोरडे",
+  "ui.on": "चालू", "ui.off": "बंद", "ui.wait": "थांबा / बंद", "ui.now": "आता", "ui.demoLeaf": "डेमो पान", "ui.drip": "ड्रिप लाईन", "ui.wet": "ओले", "ui.drySoil": "कोरडे",
   "ui.trendUp": "वाढ", "ui.trendDown": "घसरण", "ui.search": "शोधा…", "ui.opened": "{label} उघडले",
   "ui.addedTasks": "कामात जोडले", "ui.savedToast": "जतन झाले", "ui.costRow": "खर्च", "ui.revenue": "उत्पन्न",
   "ui.profit": "नफा", "ui.perAcre": "प्रति एकर", "ui.traditional": "पारंपरिक", "ui.rainSensor": "पाऊस सेन्सर",
@@ -415,6 +439,14 @@ const mr = pack({
   "ai.sell": "टोमॅटो मंडी ₹{n}/किलो ({trend}). ग्रेड ए असेल तर ३–४ दिवस ठेवा.",
   "ai.soil": "माती आरोग्य {n}/१००. {rec}",
   "lvl.info": "माहिती", "lvl.warning": "इशारा", "lvl.critical": "गंभीर",
+  "cop.hello": "सिंचन, माती, हवामान, कीड, खत किंवा कापणी विचारा. आजचा शेत निर्णय आणि उपलब्ध आकडेच वापरतो.",
+  "cop.placeholder": "शेतीचा प्रश्न विचारा…",
+  "cop.listening": "ऐकत आहे…",
+  "cop.noVoice": "या ब्राउझरमध्ये आवाज उपलब्ध नाही. टाइप करा.",
+  "cop.weather": "उपलब्ध हवामान: {temp}°C, पाऊस {rain}%, आर्द्रता {humid}%, माती ओलावा {moist}%. डॅशबोर्ड मूल्ये.",
+  "cop.crop": "सध्याचे पीक {crop}. आजचा निर्णय: {rec}",
+  "cop.harvest": "{crop} टप्पा {stage}. रंग आणि घट्टपणा पाहून कापा.",
+  "cop.general": "आजचा निर्णय: {rec}. पाणी, माती, हवामान, कीड, खत किंवा कापणी विचारा.",
 });
 
 const te = pack({
@@ -476,7 +508,7 @@ const te = pack({
   "ui.judge": "నేటి నిర్ణయం తర్వాత తదుపరి అడుగు.", "ui.profile": "ప్రొఫైల్",
   "ui.loggedIn": "లాగిన్ అయింది", "ui.registered": "నమోదు అయింది", "ui.authFail": "ప్రామాణీకరణ విఫలం",
   "ui.sellBody": "గ్రేడ్-ఎ పంటను 3–4 రోజులు ఉంచండి. దగ్గరి మండి తేడా ₹2–4.",
-  "ui.on": "ఆన్", "ui.off": "ఆఫ్", "ui.wait": "వేచి / ఆఫ్", "ui.now": "ఇప్పుడు", "ui.wet": "తడి", "ui.drySoil": "పొడి",
+  "ui.on": "ఆన్", "ui.off": "ఆఫ్", "ui.wait": "వేచి / ఆఫ్", "ui.now": "ఇప్పుడు", "ui.demoLeaf": "డెమో ఆకు", "ui.drip": "డ్రిప్ లైన్లు", "ui.wet": "తడి", "ui.drySoil": "పొడి",
   "ui.trendUp": "పెరుగుదల", "ui.trendDown": "తగ్గుదల", "ui.search": "వెతకండి…", "ui.opened": "{label} తెరిచారు",
   "ui.addedTasks": "పనులకు జోడించబడింది", "ui.savedToast": "సేవ్ అయింది", "ui.costRow": "ఖర్చు", "ui.revenue": "ఆదాయం",
   "ui.profit": "లాభం", "ui.perAcre": "ఎకరానికి", "ui.traditional": "సాంప్రదాయ", "ui.rainSensor": "వర్షం సెన్సార్",
@@ -515,6 +547,14 @@ const te = pack({
   "ai.sell": "టమోటా మండి ₹{n}/కిలో ({trend}). గ్రేడ్ ఎ అయితే 3–4 రోజులు ఉంచండి.",
   "ai.soil": "నేల ఆరోగ్యం {n}/100. {rec}",
   "lvl.info": "సమాచారం", "lvl.warning": "హెచ్చరిక", "lvl.critical": "తీవ్రం",
+  "cop.hello": "నీటిపారుదల, నేల, వాతావరణం, తెగుళ్లు, ఎరువు లేదా కోత అడగండి. నేటి పొలం నిర్ణయం మరియు అందుబాటు సంఖ్యలే వాడతాను.",
+  "cop.placeholder": "వ్యవసాయ ప్రశ్న అడగండి…",
+  "cop.listening": "వింటున్నాను…",
+  "cop.noVoice": "ఈ బ్రౌజర్‌లో వాయిస్ లేదు. టైప్ చేయండి.",
+  "cop.weather": "అందుబాటు వాతావరణం: {temp}°C, వర్షం {rain}%, తేమ {humid}%, నేల తేమ {moist}%. డాష్‌బోర్డ్ విలువలు.",
+  "cop.crop": "ప్రస్తుత పంట {crop}. నేటి నిర్ణయం: {rec}",
+  "cop.harvest": "{crop} దశ {stage}. రంగు మరియు గట్టిదనం చూసి కోయండి.",
+  "cop.general": "నేటి నిర్ణయం: {rec}. నీరు, నేల, వాతావరణం, తెగుళ్లు, ఎరువు లేదా కోత అడగండి.",
 });
 
 export const dict = { en, hi, bn, mr, te };
@@ -526,15 +566,21 @@ export function t(lang, key, vars) {
 
 export function cropKey(name) {
   const n = String(name || "").toLowerCase();
-  if (n.includes("wheat") || n.includes("गेहूँ") || n.includes("गेहूं")) return "crop.wheat";
-  if (n.includes("potato") || n.includes("आलू")) return "crop.potato";
+  if (
+    n.includes("wheat") || n.includes("गेहूँ") || n.includes("गेहूं") ||
+    n.includes("গম") || n.includes("गहू") || n.includes("गोधूम") || n.includes("గోధుమ")
+  ) return "crop.wheat";
+  if (
+    n.includes("potato") || n.includes("आलू") || n.includes("আলু") ||
+    n.includes("बटाटा") || n.includes("బంగాళాదుంప") || n.includes("ఆలు")
+  ) return "crop.potato";
   return "crop.tomato";
 }
 
 export function stageKey(stage) {
   const s = String(stage || "");
-  if (/tiller/i.test(s)) return "stage.tillering";
-  if (/tuber/i.test(s)) return "stage.tuber";
+  if (/tiller|कल्ले|কুশি|फुटवे|దున్న/i.test(s)) return "stage.tillering";
+  if (/tuber|कंद|কন্দ|దుంప/i.test(s)) return "stage.tuber";
   return "stage.fruit";
 }
 
