@@ -4,6 +4,7 @@ import { LineChart, Line, ResponsiveContainer, XAxis, Tooltip, BarChart, Bar, Le
 import { useFarm } from "../context/FarmContext";
 import { answerFarmQuestion, schemes, profitSim, predictYield } from "../services/decisionEngine";
 import { authApi, farmApi, aiApi, dataApi, getToken, setToken } from "../services/api";
+import { LANGS, cropKey } from "../i18n";
 
 const chart = (n) =>
   Array.from({ length: n }, (_, i) => ({
@@ -19,15 +20,16 @@ const chart = (n) =>
   }));
 
 export function Analytics() {
+  const { t = (k) => k } = useFarm();
   const [range, setRange] = useState(7);
   const data = chart(range === "season" ? 16 : +range);
   return (
     <div className="grid">
-      <h2>Analytics</h2>
+      <h2>{t("an.title")}</h2>
       <div className="row">
         {[7, 30, "season"].map((r) => (
           <button key={r} className={range === r ? "btn" : "btn ghost"} onClick={() => setRange(r)}>
-            {r === "season" ? "Season" : `${r} days`}
+            {r === "season" ? t("ui.season") : `${r} ${t("ui.days")}`}
           </button>
         ))}
       </div>
@@ -53,36 +55,36 @@ export function Analytics() {
 }
 
 export function Market() {
-  const { rec } = useFarm();
+  const { rec, t = (k) => k } = useFarm();
   const [area, setArea] = useState(4.5);
   const [cost, setCost] = useState(38000);
   const [price, setPrice] = useState(rec.market.tomato);
   const sim = profitSim({ area, crop: rec.crop.name, cost, price });
   return (
     <div className="grid">
-      <h2>Market & profit</h2>
+      <h2>{t("mkt.title")}</h2>
       <div className="grid g-3">
         {[["Tomato", rec.market.tomato], ["Wheat", rec.market.wheat], ["Potato", rec.market.potato]].map(([k, v]) => (
-          <div className="card" key={k}><div className="muted">{k} mandi</div><div className="kpi">₹{v}/kg</div><p className="muted">Trend {rec.market.trend}</p></div>
+          <div className="card" key={k}><div className="muted">{t(cropKey(k))} {t("ui.mandi")}</div><div className="kpi">₹{v}/kg</div><p className="muted">{t("ui.trend")} {rec.market.trendLabel || rec.market.trend}</p></div>
         ))}
       </div>
       <div className="card">
-        <h3>AI selling recommendation</h3>
-        <p>Hold grade-A {rec.crop.name} 3–4 days. Nearby mandi spread ₹2–4. Decision Engine sees healthy fruit set + rising price.</p>
+        <h3>{t("ui.sell")}</h3>
+        <p>{t("ui.sellBody")} {rec.crop.label || rec.crop.name}.</p>
       </div>
       <div className="card">
-        <h3>Farm Profit Simulator</h3>
+        <h3>{t("ui.sim")}</h3>
         <div className="grid g-3">
-          <label>Area acres<input className="input" type="number" value={area} onChange={(e) => setArea(+e.target.value)} /></label>
-          <label>Cost / acre<input className="input" type="number" value={cost} onChange={(e) => setCost(+e.target.value)} /></label>
-          <label>Price ₹/kg<input className="input" type="number" value={price} onChange={(e) => setPrice(+e.target.value)} /></label>
+          <label>{t("ui.area")}<input className="input" type="number" value={area} onChange={(e) => setArea(+e.target.value)} /></label>
+          <label>{t("ui.cost")}<input className="input" type="number" value={cost} onChange={(e) => setCost(+e.target.value)} /></label>
+          <label>{t("ui.price")}<input className="input" type="number" value={price} onChange={(e) => setPrice(+e.target.value)} /></label>
         </div>
         <table className="table">
-          <thead><tr><th></th><th>Traditional</th><th>FarmSense</th></tr></thead>
+          <thead><tr><th></th><th>{t("ui.traditional")}</th><th>FarmSense AI</th></tr></thead>
           <tbody>
-            {["cost", "revenue", "profit", "perAcre"].map((k) => (
+            {[["cost", t("ui.costRow")], ["revenue", t("ui.revenue")], ["profit", t("ui.profit")], ["perAcre", t("ui.perAcre")]].map(([k, lab]) => (
               <tr key={k}>
-                <td>{k}</td>
+                <td>{lab}</td>
                 <td>₹{Math.round(sim.traditional[k]).toLocaleString("en-IN")}</td>
                 <td>₹{Math.round(sim.farmsense[k]).toLocaleString("en-IN")}</td>
               </tr>
@@ -95,19 +97,20 @@ export function Market() {
 }
 
 export function Schemes() {
+  const { t = (k) => k } = useFarm();
   const [q, setQ] = useState("");
   const list = schemes.filter((s) => (s.name + s.cat + s.benefit).toLowerCase().includes(q.toLowerCase()));
   return (
     <div className="grid">
-      <h2>Government schemes</h2>
-      <input className="input" placeholder="Search irrigation, insurance…" value={q} onChange={(e) => setQ(e.target.value)} />
+      <h2>{t("sch.title")}</h2>
+      <input className="input" placeholder={t("menu.search")} value={q} onChange={(e) => setQ(e.target.value)} />
       {list.map((s) => (
         <div className="card" key={s.id}>
-          <span className="tag">{s.cat}</span>
-          <h3>{s.name}</h3>
-          <p><b>Benefit:</b> {s.benefit}</p>
-          <p><b>Eligibility:</b> {s.eligibility}</p>
-          <p><b>Documents:</b> {s.docs}</p>
+          <span className="tag">{t(`cat.${s.cat}`)}</span>
+          <h3>{t(`sch.${s.id === "uk-soil" ? "uk" : s.id}`)}</h3>
+          <p><b>{t("ui.benefit")}:</b> {t(`sch.${s.id === "uk-soil" ? "uk" : s.id}B`)}</p>
+          <p><b>{t("ui.elig")}:</b> {t(`sch.${s.id === "uk-soil" ? "uk" : s.id}E`)}</p>
+          <p><b>{t("ui.docs")}:</b> {t(`sch.${s.id === "uk-soil" ? "uk" : s.id}D`)}</p>
         </div>
       ))}
     </div>
@@ -115,7 +118,7 @@ export function Schemes() {
 }
 
 export function Assistant() {
-  const { rec } = useFarm();
+  const { rec, t = (k) => k } = useFarm();
   const [lang, setLang] = useState("en-IN");
   const [log, setLog] = useState([{ role: "ai", text: rec.reason }]);
   const [q, setQ] = useState("");
@@ -128,11 +131,17 @@ export function Assistant() {
   };
   const ask = async (text = q) => {
     let a = answerFarmQuestion(text, rec);
+    if (a && typeof a === "object") {
+      if (a.kind === "disease") a = t("ai.disease", { crop: t(cropKey(a.crop)), n: a.n });
+      else if (a.kind === "sell") a = t("ai.sell", { n: a.n, trend: t(a.trend === "up" ? "ui.trendUp" : "ui.trendDown") });
+      else if (a.kind === "soil") a = t("ai.soil", { n: a.n, rec: t(a.rec) });
+      else a = rec.reason;
+    }
     if (getToken()) {
       try {
         const out = await aiApi.copilot({ question: text, rec, lang });
         a = out.text || a;
-      } catch { /* local */ }
+      } catch { /* local fallback */ }
     }
     setLog((l) => [...l, { role: "me", text }, { role: "ai", text: a }]);
     setQ("");
@@ -151,8 +160,8 @@ export function Assistant() {
   };
   return (
     <div className="grid">
-      <h2>Farm Copilot</h2>
-      <p className="muted">Answers use the same Decision Engine as the dashboard.</p>
+      <h2>{t("cop.title")}</h2>
+      <p className="muted">{t("ui.copHint")}</p>
       <div className="row">
         {[["en-IN", "English"], ["hi-IN", "Hindi"], ["ta-IN", "Tamil"]].map(([v, l]) => (
           <button key={v} className={lang === v ? "btn" : "btn ghost"} onClick={() => setLang(v)}>{l}</button>
@@ -160,76 +169,75 @@ export function Assistant() {
       </div>
       <div className="card" style={{ minHeight: 240 }}>
         {log.map((m, i) => (
-          <p key={i}><b>{m.role === "ai" ? "FarmSense" : "You"}:</b> {m.text}</p>
+          <p key={i}><b>{m.role === "ai" ? "FarmSense" : t("ui.you")}:</b> {m.text}</p>
         ))}
       </div>
       <div className="row">
-        <input className="input" style={{ flex: 1 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Kal paani dena chahiye?" />
-        <button className="btn" onClick={() => ask()}>Ask</button>
-        <button className="btn ghost" onClick={listen}>Voice</button>
+        <input className="input" style={{ flex: 1 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("menu.search")} />
+        <button className="btn" onClick={() => ask()}>{t("ui.ask")}</button>
+        <button className="btn ghost" onClick={listen}>{t("ui.voice")}</button>
       </div>
     </div>
   );
 }
 
 export function Tasks() {
-  const { state, setState, addTask } = useFarm();
+  const { state, setState, addTask, t = (k) => k } = useFarm();
   const [title, setTitle] = useState("");
   const tasks = state?.tasks || [];
-  const done = tasks.filter((t) => t.done).length;
+  const done = tasks.filter((x) => x.done).length;
   return (
     <div className="grid">
-      <h2>Tasks & calendar</h2>
+      <h2>{t("tsk.title")}</h2>
       <div className="progress"><span style={{ width: `${(done / Math.max(1, tasks.length)) * 100}%` }} /></div>
-      <p>{done}/{tasks.length} complete</p>
+      <p>{done}/{tasks.length} {t("ui.complete")}</p>
       <div className="row">
-        <input className="input" style={{ flex: 1 }} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New task" />
-        <button className="btn" onClick={() => { addTask({ title, due: new Date().toISOString().slice(0, 10), type: "general" }); setTitle(""); }}>Add</button>
+        <input className="input" style={{ flex: 1 }} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("ui.newTask")} />
+        <button className="btn" onClick={() => { addTask({ title, due: new Date().toISOString().slice(0, 10), type: "general" }); setTitle(""); }}>{t("ui.add")}</button>
       </div>
-      {tasks.map((t) => (
-        <div className="card row" key={t.id} style={{ justifyContent: "space-between" }}>
-          <label><input type="checkbox" checked={t.done} onChange={() => {
-            const done = !t.done;
-            setState((s) => ({ ...s, tasks: (s.tasks || []).map((x) => x.id === t.id ? { ...x, done } : x) }));
-            if (getToken() && (t._id || t.id)) dataApi.patchTask(t._id || t.id, { done }).catch(() => {});
-          }} /> {t.title}</label>
-          <span className="muted">{t.due}</span>
+      {tasks.map((task) => (
+        <div className="card row" key={task.id} style={{ justifyContent: "space-between" }}>
+          <label><input type="checkbox" checked={task.done} onChange={() => {
+            const done = !task.done;
+            setState((s) => ({ ...s, tasks: s.tasks.map((x) => x.id === task.id ? { ...x, done } : x) }));
+            if (getToken() && (task._id || task.id)) dataApi.patchTask(task._id || task.id, { done }).catch(() => {});
+          }} /> {task.title}</label>
+          <span className="muted">{task.due}</span>
           <button className="btn ghost" onClick={() => {
-            setState((s) => ({ ...s, tasks: (s.tasks || []).filter((x) => x.id !== t.id) }));
-            if (getToken() && (t._id || t.id)) dataApi.delTask(t._id || t.id).catch(() => {});
-          }}>Delete</button>
+            setState((s) => ({ ...s, tasks: s.tasks.filter((x) => x.id !== task.id) }));
+            if (getToken() && (task._id || task.id)) dataApi.delTask(task._id || task.id).catch(() => {});
+          }}>{t("ui.delete")}</button>
         </div>
       ))}
     </div>
   );
 }
 
-
 export function Alerts() {
-  const { alerts, rec, weather } = useFarm();
+  const { alerts, rec, weather, t = (k) => k } = useFarm();
   const nav = useNavigate();
   const fallback = [
-    { id: "a1", level: "warning", title: rec?.recommendation || "Check irrigation today", to: "/irrigation" },
-    { id: "a2", level: "warning", title: "Rain probability 65%", to: "/weather" },
-    { id: "a3", level: "warning", title: "Tomato blight risk 34% on Field A", to: "/doctor" },
-    { id: "a4", level: "info", title: "Canopy heat 29°C", to: "/weather" },
-    { id: "a5", level: "info", title: "Tomato mandi price update", to: "/market" },
-    { id: "a6", level: "info", title: "Field B soil test due", to: "/soil" },
-    { id: "a7", level: "info", title: "Open farm tasks", to: "/tasks" },
+    { id: "a1", level: rec?.action === "delay" ? "info" : "warning", title: rec?.recommendation || t("dash.openIrr"), to: "/irrigation" },
+    { id: "a2", level: "warning", title: `${t("ui.rainChance")} ${weather?.rainProb ?? 65}%`, to: "/weather" },
+    { id: "a3", level: "warning", title: t("alert.blight"), to: "/doctor" },
+    { id: "a4", level: (weather?.temp || 0) >= 35 ? "critical" : "info", title: t("alert.heat", { n: weather?.temp ?? 29 }), to: "/weather" },
+    { id: "a5", level: "info", title: t("alert.price", { n: rec?.market?.tomato ?? "" }), to: "/market" },
+    { id: "a6", level: "info", title: t("alert.soil"), to: "/soil" },
+    { id: "a7", level: "info", title: t("tsk.title"), to: "/tasks" },
   ];
   const list = alerts && alerts.length ? alerts : fallback;
   return (
     <div className="grid">
-      <h2>Alerts</h2>
+      <h2>{t("al.title")}</h2>
       {list.map((a) => (
-        <div className="card row" key={a.id} style={{ justifyContent: "space-between" }}>
+        <div className="card row" key={a.id} style={{ justifyContent: "space-between", opacity: 1 }}>
           <div>
-            <span className="tag">{a.level}</span>
+            <span className={`tag ${a.level === "critical" ? "danger" : a.level === "warning" ? "warn" : "info"}`}>{t(`lvl.${a.level}`)}</span>
             <b> {a.title}</b>
           </div>
           <div className="row">
-            <button type="button" className="btn ghost" onClick={() => nav(a.to || "/")}>Open</button>
-            <button type="button" className="btn" onClick={() => nav(a.to || "/")}>Read</button>
+            <button type="button" className="btn ghost" onClick={() => nav(a.to || "/dashboard")}>{t("btn.open")}</button>
+            <button type="button" className="btn" onClick={() => nav(a.to || "/dashboard")}>{t("btn.read")}</button>
           </div>
         </div>
       ))}
@@ -238,21 +246,21 @@ export function Alerts() {
 }
 
 export function Iot() {
-  const { rec, state, setState } = useFarm();
+  const { rec, state, setState, t = (k) => k } = useFarm();
   const s = state.sensors;
   return (
     <div className="grid">
-      <h2>IoT · ESP32</h2>
-      <p>{s.online ? "Online" : "Offline"} · last seen {new Date(s.lastSeen).toLocaleTimeString()}</p>
+      <h2>{t("iot.title")}</h2>
+      <p>{s.online ? t("ui.online") : t("ui.offline")} · {t("ui.lastSeen")} {new Date(s.lastSeen).toLocaleTimeString()}</p>
       <div className="grid g-4">
-        {[["Moisture", `${s.moisture}%`], ["Temp", `${s.temperature}°C`], ["Humidity", `${s.humidity}%`], ["Rain sensor", s.rain ? "Wet" : "Dry"], ["Pump", rec.iot.pump ? "ON" : "OFF"]].map(([k, v]) => (
+        {[[t("dash.moisture"), `${s.moisture}%`], [t("ui.temp"), `${s.temperature}°C`], [t("ui.humid"), `${s.humidity}%`], [t("ui.rainSensor"), s.rain ? t("ui.wet") : t("ui.drySoil")], [t("dash.pump"), rec.iot.pump ? t("ui.on") : t("ui.off")]].map(([k, v]) => (
           <div className="card iot-node" key={k}><div className="muted">{k}</div><div className="kpi">{v}</div></div>
         ))}
       </div>
       <div className="card">
-        <h3>Flow</h3>
-        <p>Sensor ({s.moisture}%) → ESP32 → AI → <b>{rec.action.toUpperCase()}</b> → Pump {rec.iot.pump ? "ON" : "OFF"} → {rec.impact.waterSavedL}L saved</p>
-        <label>Moisture
+        <h3>{t("ui.flow")}</h3>
+        <p>Sensor ({s.moisture}%) → ESP32 → AI → <b>{rec.recommendation}</b> → {t("dash.pump")} {rec.iot.pump ? t("ui.on") : t("ui.off")} → {rec.impact.waterSavedL}L {t("dash.saved")}</p>
+        <label>{t("dash.moisture")}
           <input type="range" min="10" max="80" value={s.moisture} onChange={(e) => setState((st) => ({ ...st, sensors: { ...st.sensors, moisture: +e.target.value, lastSeen: Date.now() } }))} />
         </label>
       </div>
@@ -261,17 +269,17 @@ export function Iot() {
 }
 
 export function Impact() {
-  const { rec } = useFarm();
+  const { rec, t = (k) => k } = useFarm();
   const data = [
-    { n: "Water L", v: rec.impact.waterSavedL },
+    { n: t("dash.waterSaved"), v: rec.impact.waterSavedL },
     { n: "₹", v: rec.impact.moneySaved },
-    { n: "Health", v: rec.crop.health },
-    { n: "Yield %", v: rec.impact.yieldLiftPct },
+    { n: t("ui.health"), v: rec.crop.health },
+    { n: t("ui.yield"), v: rec.impact.yieldLiftPct },
     { n: "CO₂ kg", v: rec.impact.co2Kg },
   ];
   return (
     <div className="grid">
-      <h2>Impact</h2>
+      <h2>{t("imp.title")}</h2>
       <div className="grid g-3">
         {data.map((d) => (
           <div className="card" key={d.n}><div className="muted">{d.n}</div><div className="kpi">{d.v}</div></div>
@@ -287,43 +295,43 @@ export function Impact() {
 }
 
 export function Reports() {
-  const { rec, state } = useFarm();
+  const { rec, state, t = (k) => k } = useFarm();
   return (
     <div className="grid">
-      <h2>Reports</h2>
+      <h2>{t("rep.title")}</h2>
       <div className="card" id="print-area">
-        <h3>FarmSense weekly brief — {state.farm.location}</h3>
-        <p>Farmer {state.farm.farmer} · {state.farm.area} acres</p>
-        <p><b>Decision:</b> {rec.recommendation}</p>
+        <h3>FarmSense AI {t("ui.brief")} — {state.farm.location}</h3>
+        <p>{t("ui.farmer")} {state.farm.farmer} · {state.farm.area} {t("ui.acres")}</p>
+        <p><b>{t("ui.decision")}:</b> {rec.recommendation}</p>
         <p>{rec.reason}</p>
-        <p>Water saved {rec.impact.waterSavedL}L · ₹{rec.impact.moneySaved} · Yield lift {rec.impact.yieldLiftPct}%</p>
-        <p>Yield outlook {predictYield({ crop: rec.crop.name }).totalT} t total</p>
+        <p>{t("dash.waterSaved")} {rec.impact.waterSavedL}L · ₹{rec.impact.moneySaved} · {t("ui.yieldLift")} {rec.impact.yieldLiftPct}%</p>
+        <p>{t("ui.outlook")} {predictYield({ crop: rec.crop.name }).totalT} t {t("ui.total")}</p>
       </div>
-      <button className="btn" onClick={() => window.print()}>Print / download</button>
+      <button className="btn" onClick={() => window.print()}>{t("ui.print")}</button>
     </div>
   );
 }
 
 export function FarmPage() {
-  const { state, setState, toast } = useFarm();
+  const { state, setState, toast, t = (k) => k } = useFarm();
   const f = state.farm;
   const set = (k, v) => setState((s) => ({ ...s, farm: { ...s.farm, [k]: v } }));
   return (
     <div className="grid">
-      <h2>Farm profile</h2>
+      <h2>{t("ui.farmProfile")}</h2>
       <div className="card grid">
-        {[["farmer", "Farmer"], ["location", "Location"], ["soil", "Soil"], ["irrigation", "Irrigation"], ["waterSource", "Water source"]].map(([k, l]) => (
+        {[["farmer", t("ui.farmer")], ["location", t("ui.location")], ["soil", t("nav.soil")], ["irrigation", t("nav.irrigation")], ["waterSource", t("ui.waterSrc")]].map(([k, l]) => (
           <label key={k}>{l}<input className="input" value={f[k]} onChange={(e) => set(k, e.target.value)} /></label>
         ))}
-        <label>Area acres<input className="input" type="number" value={f.area} onChange={(e) => set("area", +e.target.value)} /></label>
-        <button className="btn" onClick={() => { toast("Farm saved"); if (getToken()) farmApi.save(f).catch(() => {}); }}>Save</button>
+        <label>{t("ui.acres")}<input className="input" type="number" value={f.area} onChange={(e) => set("area", +e.target.value)} /></label>
+        <button className="btn" onClick={() => { toast(t("btn.save")); if (getToken()) farmApi.save(f).catch(() => {}); }}>{t("btn.save")}</button>
       </div>
     </div>
   );
 }
 
 export function Settings() {
-  const { state, setState, setTheme, toast, user, setUser } = useFarm();
+  const { state, setState, setTheme, toast, user, setUser, t = (k) => k, setLanguage } = useFarm();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -334,40 +342,42 @@ export function Settings() {
         : await authApi.register({ name: name || "Farmer", email, password });
       setToken(d.token);
       setUser(d.user);
-      toast(mode === "login" ? "Logged in" : "Registered");
+      toast(mode === "login" ? t("ui.loggedIn") : t("ui.registered"));
     } catch (e) {
       toast(e.message);
     }
   };
   return (
     <div className="grid">
-      <h2>Settings</h2>
+      <h2>{t("set.title")}</h2>
       <div className="card grid">
-        <h3>Account</h3>
-        {user ? <p>Signed in as {user.name} ({user.email})</p> : (
+        <h3>{t("set.account")}</h3>
+        {user ? <p>{t("ui.signedIn")} {user.name} ({user.email})</p> : (
           <>
-            <input className="input" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-            <input className="input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <input className="input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input className="input" placeholder={t("ui.name")} value={name} onChange={(e) => setName(e.target.value)} />
+            <input className="input" placeholder={t("ui.email")} value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="input" type="password" placeholder={t("ui.password")} value={password} onChange={(e) => setPassword(e.target.value)} />
             <div className="row">
-              <button className="btn" onClick={() => doAuth("login")}>Login</button>
-              <button className="btn ghost" onClick={() => doAuth("register")}>Register</button>
+              <button className="btn" onClick={() => doAuth("login")}>{t("btn.login")}</button>
+              <button className="btn ghost" onClick={() => doAuth("register")}>{t("btn.register")}</button>
             </div>
           </>
         )}
-        {user && <button className="btn ghost" onClick={() => { setToken(null); setUser(null); toast("Logged out"); }}>Logout</button>}
-        <label>Language
-          <select className="input" value={state.farm.language} onChange={(e) => setState((s) => ({ ...s, farm: { ...s.farm, language: e.target.value } }))}>
-            <option value="en">English</option><option value="hi">Hindi</option><option value="ta">Tamil</option>
+        {user && <button className="btn ghost" onClick={() => { setToken(null); setUser(null); toast(t("ui.logout")); }}>{t("ui.logout")}</button>}
+        <label>{t("set.lang")}
+          <select className="input" value={state.farm.language || "en"} onChange={(e) => setLanguage ? setLanguage(e.target.value) : setState((s) => ({ ...s, farm: { ...s.farm, language: e.target.value } }))}>
+            {LANGS.map((L) => (
+              <option key={L.id} value={L.id}>{L.name}</option>
+            ))}
           </select>
         </label>
         <div className="row">
-          <button className="btn" onClick={() => { setTheme("light"); document.documentElement.dataset.theme = "light"; }}>Light</button>
-          <button className="btn ghost" onClick={() => { setTheme("dark"); document.documentElement.dataset.theme = "dark"; }}>Dark</button>
+          <button className="btn" onClick={() => { setTheme("light"); document.documentElement.dataset.theme = "light"; }}>{t("ui.light")}</button>
+          <button className="btn ghost" onClick={() => { setTheme("dark"); document.documentElement.dataset.theme = "dark"; }}>{t("ui.dark")}</button>
         </div>
-        <label><input type="checkbox" checked={state.offline} onChange={(e) => setState((s) => ({ ...s, offline: e.target.checked }))} /> Force offline / queued sync</label>
-        <p className="muted">Notifications, metric units, device pairing and privacy stay on-device.</p>
-        <button className="btn" onClick={() => { localStorage.clear(); toast("Local data cleared"); location.reload(); }}>Clear local data</button>
+        <label><input type="checkbox" checked={state.offline} onChange={(e) => setState((s) => ({ ...s, offline: e.target.checked }))} /> {t("ui.forceOff")}</label>
+        <p className="muted">{t("ui.privacy")}</p>
+        <button className="btn" onClick={() => { localStorage.clear(); toast(t("ui.clear")); location.reload(); }}>{t("ui.clear")}</button>
       </div>
     </div>
   );

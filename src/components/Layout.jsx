@@ -2,43 +2,46 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useFarm } from "../context/FarmContext";
 import { schemes } from "../services/decisionEngine";
+import { LANGS } from "../i18n";
 
-const primary = [
-  ["/", "Dashboard", "⌂"],
-  ["/farm", "Farm", "▣"],
-  ["/map", "Farm Map", "◎"],
-  ["/analytics", "Analytics", "▦"],
-  ["/weather", "Weather", "☁"],
-  ["/soil", "Soil", "⬡"],
-  ["/iot", "IoT", "◉"],
-  ["/crops", "Crops", "❀"],
+const primaryKeys = [
+  ["/dashboard", "nav.dashboard", "⌂"],
+  ["/farm", "nav.farm", "▣"],
+  ["/map", "nav.map", "◎"],
+  ["/analytics", "nav.analytics", "▦"],
+  ["/weather", "nav.weather", "☁"],
+  ["/soil", "nav.soil", "⬡"],
+  ["/iot", "nav.iot", "◉"],
+  ["/crops", "nav.crops", "❀"],
 ];
 
-const more = [
-  ["/doctor", "Crop Doctor"],
-  ["/irrigation", "Irrigation"],
-  ["/assistant", "Copilot"],
-  ["/market", "Market"],
-  ["/tasks", "Tasks"],
-  ["/alerts", "Alerts"],
-  ["/schemes", "Schemes"],
-  ["/impact", "Impact"],
-  ["/reports", "Reports"],
-  ["/settings", "Settings"],
+const moreKeys = [
+  ["/doctor", "nav.doctor"],
+  ["/irrigation", "nav.irrigation"],
+  ["/assistant", "nav.copilot"],
+  ["/market", "nav.market"],
+  ["/tasks", "nav.tasks"],
+  ["/alerts", "nav.alerts"],
+  ["/schemes", "nav.schemes"],
+  ["/impact", "nav.impact"],
+  ["/reports", "nav.reports"],
+  ["/settings", "nav.settings"],
 ];
 
 export default function Layout() {
-  const farm = useFarm() || {};
-  const { rec, toast, toasts, online, state, alerts, weather } = farm;
+  const { rec, toast, toasts, online, state, alerts, weather, t = (k) => k, setLanguage } = useFarm() || {};
   const [pal, setPal] = useState(false);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [help, setHelp] = useState(false);
   const [menu, setMenu] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const primary = primaryKeys.map(([to, k, icon]) => [to, t(k), icon]);
+  const more = moreKeys.map(([to, k]) => [to, t(k)]);
   const nav = useNavigate();
   const unread = (alerts || []).filter((a) => !a.read).length;
-  const name = state?.farm?.farmer || "Farmer";
+  const name = state.farm.farmer || "Farmer";
   const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   useEffect(() => {
@@ -59,13 +62,13 @@ export default function Layout() {
   };
 
   const items = [
-    ...primary.map(([to, label]) => ({ to, label, group: "Pages" })),
-    ...more.map(([to, label]) => ({ to, label, group: "More" })),
-    ...(state?.tasks || []).map((t) => ({ to: "/tasks", label: t.title, group: "Tasks" })),
-    ...(schemes || []).map((s) => ({ to: "/schemes", label: s.name, group: "Schemes" })),
-    ...(alerts || []).map((a) => ({ to: a.to, label: a.title, group: "Alerts" })),
-    { to: "/", label: rec?.recommendation || "Dashboard", group: "Recommendation" },
-  ].filter((i) => (i.label || "").toLowerCase().includes(q.toLowerCase()));
+    ...primary.map(([to, label]) => ({ to, label, group: t("menu.pages") })),
+    ...more.map(([to, label]) => ({ to, label, group: t("menu.more") })),
+    ...(state?.tasks || []).map((task) => ({ to: "/tasks", label: task.title, group: t("nav.tasks") })),
+    ...schemes.map((s) => ({ to: "/schemes", label: t(`sch.${s.id === "uk-soil" ? "uk" : s.id}`), group: t("nav.schemes") })),
+    ...(alerts || []).map((a) => ({ to: a.to, label: a.title, group: t("nav.alerts") })),
+    { to: "/dashboard", label: rec?.recommendation || t("nav.dashboard"), group: t("menu.recommendation") },
+  ].filter((i) => i.label.toLowerCase().includes(q.toLowerCase()));
 
   const SidebarInner = (
     <>
@@ -73,19 +76,19 @@ export default function Layout() {
         <div className="brand-mark">FS</div>
         <div>
           <h1>FarmSense AI</h1>
-          <p>Sense → Decide → Act</p>
+          <p>{t("tagline")}</p>
         </div>
       </div>
       <nav className="nav-scroll" aria-label="Main">
         {primary.map(([to, label, icon]) => (
-          <NavLink key={to} to={to} end={to === "/"} onClick={() => setOpen(false)} className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
+            <NavLink key={to} to={to} end={to === "/dashboard"} onClick={() => setOpen(false)} className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
             <span className="nav-ico">{icon}</span>
             <span className="nav-label">{label}</span>
           </NavLink>
         ))}
         <button type="button" className="nav-link nav-more-btn" onClick={() => setMoreOpen((v) => !v)}>
           <span className="nav-ico">▾</span>
-          <span className="nav-label">More</span>
+          <span className="nav-label">{t("nav.more")}</span>
         </button>
         {moreOpen && more.map(([to, label]) => (
           <NavLink key={to} to={to} onClick={() => setOpen(false)} className={({ isActive }) => "nav-link nav-sub" + (isActive ? " active" : "")}>
@@ -97,7 +100,7 @@ export default function Layout() {
       <div className="side-foot">
         <button type="button" className="nav-link" onClick={() => { setHelp(true); setOpen(false); }}>
           <span className="nav-ico">?</span>
-          <span className="nav-label">Help & Support</span>
+          <span className="nav-label">{t("nav.help")}</span>
         </button>
         <button type="button" className="side-profile" onClick={() => go("/farm")}>
           <span className="avatar">{initials}</span>
@@ -115,15 +118,15 @@ export default function Layout() {
       <aside className="sidebar">{SidebarInner}</aside>
       {open && <div className="nav-scrim" onClick={() => setOpen(false)} />}
       <div className="main">
-        {!online && <div className="offline">Offline mode — using cached farm data. Changes are queued locally.</div>}
+        {!online && <div className="offline">{t("offline")}</div>}
         <header className="topbar">
           <button type="button" className="hamburger" aria-label="Menu" onClick={() => setOpen((v) => !v)}>☰</button>
           <div className="top-brand">
             <span className="brand-mark sm">FS</span>
             <strong>FarmSense AI</strong>
           </div>
-          <button className="search-btn" onClick={() => setPal(true)}>Search farm, tasks, schemes…  ⌘K</button>
-          <span className="tag hide-sm">{state?.farm?.location}</span>
+          <button className="search-btn" onClick={() => setPal(true)}>{t("menu.search")}  ⌘K</button>
+          <span className="tag hide-sm">{state.farm.location}</span>
           <span className="tag">{weather?.temp ?? "--"}°C</span>
           <div className="head-user">
             <button type="button" className="user-chip" onClick={() => setMenu((v) => !v)}>
@@ -132,9 +135,15 @@ export default function Layout() {
             </button>
             {menu && (
               <div className="user-menu">
-                <button type="button" onClick={() => go("/farm")}>Profile / Farm</button>
-                <button type="button" onClick={() => go("/settings")}>Settings</button>
-                <button type="button" onClick={() => go("/assistant")}>Copilot</button>
+                <button type="button" onClick={() => go("/farm")}>{t("menu.profile")}</button>
+                <button type="button" onClick={() => go("/settings")}>{t("nav.settings")}</button>
+                <button type="button" onClick={() => go("/assistant")}>{t("nav.copilot")}</button>
+                <button type="button" onClick={() => setLangOpen((v) => !v)}>{t("menu.language")} ▾</button>
+                {langOpen && LANGS.map((L) => (
+                  <button type="button" key={L.id} onClick={() => { setLanguage?.(L.id); setLangOpen(false); setMenu(false); }}>
+                    {L.name}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -151,17 +160,16 @@ export default function Layout() {
       {help && (
         <div className="modal-bg" onClick={() => setHelp(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Help & Support</h3>
-            <p>FarmSense AI uses the Decision Engine on every page. Demo path: Dashboard → Irrigation → Doctor → Weather → Soil → Market → Copilot → Impact.</p>
-            <p className="muted">Search with ⌘/Ctrl+K. Advisory only — confirm sprays with a local agri officer.</p>
-            <button className="btn" onClick={() => setHelp(false)}>Close</button>
+            <h3>{t("nav.help")}</h3>
+            <p>{t("help.body")}</p>
+            <button className="btn" onClick={() => setHelp(false)}>{t("btn.close")}</button>
           </div>
         </div>
       )}
       {pal && (
         <div className="modal-bg" onClick={() => setPal(false)}>
           <div className="palette" onClick={(e) => e.stopPropagation()}>
-            <input autoFocus className="input" style={{ border: 0, borderRadius: 0 }} placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} />
+            <input autoFocus className="input" style={{ border: 0, borderRadius: 0 }} placeholder={t("ui.search")} value={q} onChange={(e) => setQ(e.target.value)} />
             <div style={{ maxHeight: 360, overflow: "auto" }}>
               {items.slice(0, 16).map((i, n) => (
                 <div
@@ -170,7 +178,7 @@ export default function Layout() {
                   onClick={() => {
                     nav(i.to);
                     setPal(false);
-                    toast?.(`Opened ${i.label}`);
+                    toast(t("ui.opened", { label: i.label }));
                   }}
                 >
                   <span className="muted" style={{ width: 110 }}>{i.group}</span>
