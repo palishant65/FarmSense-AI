@@ -89,16 +89,45 @@ export function analyzeCropImage(meta = {}) {
   return { at: Date.now(), ...pick, field: meta.field || "Field A — Tomato", disclaimer: "Advisory only. Confirm with a local agri officer before spraying." };
 }
 
-export function answerFarmQuestion(q, rec) {
-  const t = (q || "").toLowerCase();
-  if (/pani|paani|irrigat|water|सिंचाई/.test(t)) return rec.reason;
-  if (/bimaar|disease|doctor|blight/.test(t)) return `Disease risk on ${rec.crop?.name || "crop"} is ${rec.crop?.diseaseRisk ?? 34}%. Scout Field A and add a doctor scan if spots appear.`;
-  if (/bech|sell|mandi|price|bhav/.test(t)) return `Tomato mandi is ₹${rec.market?.tomato ?? 28}/kg (${rec.market?.trend || "up"}). Hold 3–4 days if quality is grade A.`;
-  if (/khad|fertil|npk|soil/.test(t)) {
-    const s = analyzeSoil(rec.soil);
-    return `Soil health ${s.health}/100. ${s.recs[0]}`;
+const INTENT_RULES = [
+  ["fertilizer", /fertil|npk|urea|dap|\bmop\b|compost|manure|\bkhad\b|खाद|সার|\bखत\b|ఎరువు|खते/i],
+  ["irrigate", /irrigat|\bdrip\b|\bpump\b|watering|\bpani\b|\bpaani\b|\bwater\b|सिंचाई|সেচ|सिंचन|నీటిపారుదల|\bपाणी\b|\bजल\b|నీరు/i],
+  ["pest", /pest|keeda|insect|worm|aphid|whitefly|कीट|পোকা|कीड|తెగులు/i],
+  ["disease", /disease|blight|fungus|bimaar|doctor|leaf spot|रोग|রোগ|व्याधि|వ్యాధి/i],
+  ["soil", /soil|\bph\b|loam|texture|organic carbon|माटी|मिट्टी|মাটি|माती|నేల/i],
+  ["weather", /weather|mausam|forecast|\brain\b|temperature|\btemp\b|humidity|cloud|मौसम|আবহাওয়া|हवामान|వాతావరణ|बारिश|বৃষ্টি|पाऊस|వర్ష/i],
+  ["harvest", /harvest|katai|pluck|ripen|कटाई|কাটা|कापणी|కోత/i],
+  ["sell", /sell|mandi|price|bhav|market rate|बाजार|বাজার|भाव|ధర/i],
+  ["sow", /sow|sowing|plant(ing)?|seed(ling)?|रोप|बुवाई|বীজ|पेरणी|విత్తన/i],
+  ["yield", /yield|production|उपज|ফলন|उत्पन्न|దిగుబడి/i],
+  ["care", /care|protect|prune|mulch|देखभाल|যত্ন|निगा|సంరక్షణ/i],
+  ["crop", /crop|fasal|which crop|फसल|ফসল|पीक|పంట/i],
+  ["manage", /manage|labour|labor|schedule|farm plan|प्रबंधन|ব্যবস্থাপনা|व्यवस्थापन|నిర్వహణ/i],
+];
+
+export function answerFarmQuestion(q, rec, opts = {}) {
+  const t = String(q || "").toLowerCase();
+  const r = rec || {};
+  const prev = opts.prevKind;
+  let kind = null;
+  for (const [k, re] of INTENT_RULES) {
+    if (re.test(t)) { kind = k; break; }
   }
-  return rec.reason || "Use FarmSense Decision Engine signals for today's action.";
+  if (!kind && prev && (t.length < 48 || /^(kya|what|kaise|how|batao|tell|yes|ok|aur|and|और|আর|आणखी|ఇంకా)\b/i.test(t))) {
+    kind = prev;
+  }
+  if (!kind) kind = "general";
+  if (kind === "fertilizer" || kind === "soil") {
+    const s = analyzeSoil(r.soil);
+    return { kind, n: s.health, rec: s.recs[0], ph: s.ph, nVal: s.n, pVal: s.p, kVal: s.k, moisture: s.moisture };
+  }
+  if (kind === "disease" || kind === "pest") {
+    return { kind, n: r.crop?.diseaseRisk, crop: r.crop?.name };
+  }
+  if (kind === "sell") {
+    return { kind, n: r.market?.tomato, trend: r.market?.trend };
+  }
+  return { kind };
 }
 
 export function profitSim({ area = 4.5, crop = "Tomato", cost = 38000, yieldT, price = 28 } = {}) {
