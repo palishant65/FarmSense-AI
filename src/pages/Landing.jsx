@@ -51,6 +51,9 @@ export default function Landing() {
         : await authApi.register({ name: name || "Farmer", email, password });
       setToken(d.token);
       setUser(d.user);
+      if (d.user?.name && ctx.setState) {
+        ctx.setState((s) => ({ ...s, farm: { ...s.farm, farmer: d.user.name } }));
+      }
       toast(mode === "login" ? t("ui.loggedIn") : t("ui.registered"));
       nav("/dashboard");
     } catch (err) {

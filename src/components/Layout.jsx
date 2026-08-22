@@ -29,7 +29,7 @@ const moreKeys = [
 ];
 
 export default function Layout() {
-  const { rec, toast, toasts, online, state, alerts, weather, t = (k) => k, setLanguage } = useFarm() || {};
+  const { rec, toast, toasts, online, state, alerts, weather, t = (k) => k, setLanguage, user } = useFarm() || {};
   const [pal, setPal] = useState(false);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
@@ -41,7 +41,7 @@ export default function Layout() {
   const more = moreKeys.map(([to, k]) => [to, t(k)]);
   const nav = useNavigate();
   const unread = (alerts || []).filter((a) => !a.read).length;
-  const name = state.farm.farmer || "Farmer";
+  const name = user?.name || state?.farm?.farmer || t("ui.farmer");
   const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   useEffect(() => {
@@ -80,18 +80,15 @@ export default function Layout() {
         </div>
       </div>
       <nav className="nav-scroll" aria-label="Main">
-        <div className="nav-group">{t("menu.pages") || "MAIN"}</div>
         {primary.map(([to, label, icon]) => (
-          <NavLink key={to} to={to} end={to === "/dashboard"} onClick={() => setOpen(false)} className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
+            <NavLink key={to} to={to} end={to === "/dashboard"} onClick={() => setOpen(false)} className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
             <span className="nav-ico">{icon}</span>
             <span className="nav-label">{label}</span>
           </NavLink>
         ))}
-        <div className="nav-group" style={{marginTop:8}}>{t("nav.more") || "MORE"}</div>
         <button type="button" className="nav-link nav-more-btn" onClick={() => setMoreOpen((v) => !v)}>
-          <span className="nav-ico" style={{background: moreOpen ? 'rgba(125,206,160,0.25)' : ''}}>{moreOpen ? '▼' : '▸'}</span>
+          <span className="nav-ico">▾</span>
           <span className="nav-label">{t("nav.more")}</span>
-          {unread > 0 && <span className="nav-badge">{unread}</span>}
         </button>
         {moreOpen && more.map(([to, label]) => (
           <NavLink key={to} to={to} onClick={() => setOpen(false)} className={({ isActive }) => "nav-link nav-sub" + (isActive ? " active" : "")}>
@@ -101,7 +98,7 @@ export default function Layout() {
         ))}
       </nav>
       <div className="side-foot">
-        <button type="button" className="nav-link" onClick={() => { setHelp(true); setOpen(false); }} style={{background:'rgba(255,255,255,0.06)'}}>
+        <button type="button" className="nav-link" onClick={() => { setHelp(true); setOpen(false); }}>
           <span className="nav-ico">?</span>
           <span className="nav-label">{t("nav.help")}</span>
         </button>
@@ -109,7 +106,7 @@ export default function Layout() {
           <span className="avatar">{initials}</span>
           <span>
             <strong>{name}</strong>
-            <small>{state?.farm?.location || "Hathras, UP"}</small>
+            <small>{state?.farm?.location}</small>
           </span>
         </button>
       </div>
@@ -121,55 +118,32 @@ export default function Layout() {
       <aside className="sidebar">{SidebarInner}</aside>
       {open && <div className="nav-scrim" onClick={() => setOpen(false)} />}
       <div className="main">
-        {!online && <div className="offline">⚠️ {t("offline")} — Offline mode, using cached data</div>}
+        {!online && <div className="offline">{t("offline")}</div>}
         <header className="topbar">
           <button type="button" className="hamburger" aria-label="Menu" onClick={() => setOpen((v) => !v)}>☰</button>
           <div className="top-brand">
             <span className="brand-mark sm">FS</span>
             <strong>FarmSense AI</strong>
           </div>
-          <button className="search-btn" onClick={() => setPal(true)}>
-            <span style={{display:'flex', alignItems:'center', gap:8}}>
-              <span>🔍</span> {t("menu.search")} 
-              <span className="tag" style={{marginLeft:'auto', fontSize:10, padding:'2px 6px'}}>⌘K</span>
-            </span>
-          </button>
-          <span className="tag hide-sm" style={{background:'var(--white)', border:'1px solid var(--line)'}}>📍 {state.farm.location || "Hathras"}</span>
-          <span className="tag" style={{background: (weather?.temp||0) > 35 ? 'var(--warn)' : 'var(--mint-soft)', color: (weather?.temp||0) > 35 ? 'white' : 'var(--forest)'}}>{weather?.temp ?? "--"}°C</span>
+          <button className="search-btn" onClick={() => setPal(true)}>{t("menu.search")}  ⌘K</button>
+          <span className="tag hide-sm">{state.farm.location}</span>
+          <span className="tag">{weather?.temp ?? "--"}°C</span>
           <div className="head-user">
             <button type="button" className="user-chip" onClick={() => setMenu((v) => !v)}>
-              <span className="avatar" style={{width:32, height:32, borderRadius:999}}>{initials}</span>
-              <span className="hide-sm" style={{fontWeight:600}}>{name.split(' ')[0]}</span>
-              <span style={{fontSize:10, opacity:0.6}}>▼</span>
+              <span className="avatar">{initials}</span>
+              <span className="hide-sm">{name}</span>
             </button>
             {menu && (
               <div className="user-menu">
-                <div style={{padding:'14px', borderBottom:'1px solid var(--line)', background:'linear-gradient(180deg, var(--mint-ghost), var(--white))'}}>
-                  <div style={{display:'flex', gap:10, alignItems:'center'}}>
-                    <span className="avatar" style={{width:40, height:40}}>{initials}</span>
-                    <div><b style={{fontSize:14}}>{name}</b><br/><small className="muted">{state?.farm?.location}</small></div>
-                  </div>
-                  <div style={{marginTop:12, display:'flex', flexWrap:'wrap', gap:6}}>
-                    {LANGS.map((L) => (
-                      <button key={L.id} type="button" onClick={() => { setLanguage?.(L.id); setLangOpen(false); setMenu(false); }} className="tag" style={{fontSize:11, cursor:'pointer', background: (state?.farm?.language||'en')===L.id ? 'var(--forest)' : 'var(--white)', color: (state?.farm?.language||'en')===L.id ? 'white' : 'var(--ink)'}}>
-                        {L.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <button type="button" onClick={() => go("/farm")}>👤 {t("menu.profile")}</button>
-                <button type="button" onClick={() => go("/settings")}>⚙️ {t("nav.settings")}</button>
-                <button type="button" onClick={() => go("/assistant")}>🤖 {t("nav.copilot")}</button>
-                <button type="button" onClick={() => setLangOpen((v) => !v)}>🌐 {t("menu.language")} ▾</button>
-                {langOpen && (
-                  <div className="lang-list">
-                    {LANGS.map((L) => (
-                      <button type="button" key={L.id} onClick={() => { setLanguage?.(L.id); setLangOpen(false); setMenu(false); }}>
-                        {L.name} - {L.id.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <button type="button" onClick={() => go("/farm")}>{t("menu.profile")}</button>
+                <button type="button" onClick={() => go("/settings")}>{t("nav.settings")}</button>
+                <button type="button" onClick={() => go("/assistant")}>{t("nav.copilot")}</button>
+                <button type="button" onClick={() => setLangOpen((v) => !v)}>{t("menu.language")} ▾</button>
+                {langOpen && LANGS.map((L) => (
+                  <button type="button" key={L.id} onClick={() => { setLanguage?.(L.id); setLangOpen(false); setMenu(false); }}>
+                    {L.name}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -180,46 +154,35 @@ export default function Layout() {
       </div>
       <div className="toast-wrap">
         {(toasts || []).map((t) => (
-          <div className="toast" key={t.id}>✨ {t.msg}</div>
+          <div className="toast" key={t.id}>{t.msg}</div>
         ))}
       </div>
       {help && (
         <div className="modal-bg" onClick={() => setHelp(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{marginTop:0}}>🌱 {t("nav.help")}</h3>
-            <p className="muted">{t("help.body")}</p>
-            <div className="card" style={{marginTop:12, background:'var(--mint-ghost)'}}>
-              <b>FarmSense AI v4</b><br/>
-              <small className="muted">AI-powered insights for better crop, soil, weather and irrigation decisions. Built for Indian farmers.</small>
-            </div>
-            <div className="row" style={{marginTop:16, justifyContent:'flex-end'}}>
-              <button className="btn" onClick={() => setHelp(false)}>{t("btn.close")}</button>
-            </div>
+            <h3>{t("nav.help")}</h3>
+            <p>{t("help.body")}</p>
+            <button className="btn" onClick={() => setHelp(false)}>{t("btn.close")}</button>
           </div>
         </div>
       )}
       {pal && (
         <div className="modal-bg" onClick={() => setPal(false)}>
           <div className="palette" onClick={(e) => e.stopPropagation()}>
-            <div style={{padding:12, borderBottom:'1px solid var(--line)', display:'flex', gap:8, alignItems:'center'}}>
-              <span>🔍</span>
-              <input autoFocus className="input" style={{ border: 0, boxShadow:'none', background:'transparent', padding:0 }} placeholder={t("ui.search")} value={q} onChange={(e) => setQ(e.target.value)} />
-              <span className="tag">ESC</span>
-            </div>
-            <div style={{ maxHeight: 360, overflow: "auto", padding:8 }}>
-              {items.length === 0 ? <p className="muted" style={{padding:12}}>No results</p> : items.slice(0, 16).map((i, n) => (
+            <input autoFocus className="input" style={{ border: 0, borderRadius: 0 }} placeholder={t("ui.search")} value={q} onChange={(e) => setQ(e.target.value)} />
+            <div style={{ maxHeight: 360, overflow: "auto" }}>
+              {items.slice(0, 16).map((i, n) => (
                 <div
                   key={n}
                   className="nav-link pal-item"
-                  style={{borderRadius:10, marginBottom:2}}
                   onClick={() => {
                     nav(i.to);
                     setPal(false);
                     toast(t("ui.opened", { label: i.label }));
                   }}
                 >
-                  <span className="tag" style={{ width: 90, fontSize:10, justifyContent:'center' }}>{i.group}</span>
-                  <span style={{fontWeight:500}}>{i.label}</span>
+                  <span className="muted" style={{ width: 110 }}>{i.group}</span>
+                  {i.label}
                 </div>
               ))}
             </div>

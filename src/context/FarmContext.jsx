@@ -32,9 +32,11 @@ export function FarmProvider({ children }) {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (p) => loadWx(`?lat=${p.coords.latitude}&lon=${p.coords.longitude}`),
-        () => loadWx()
+        () => {},
+        { timeout: 2500, maximumAge: 600000 }
       );
-    } else loadWx();
+    }
+    loadWx();
     dataApi.market().then(setLiveMarket).catch(() => {});
   }, []);
 
@@ -44,7 +46,7 @@ export function FarmProvider({ children }) {
     farmApi.state().then((d) => {
       setState((s) => ({
         ...s,
-        farm: { ...s.farm, ...d.farm },
+        farm: { ...s.farm, ...d.farm, farmer: s.farm.farmer || d.farm?.farmer },
         sensors: { ...s.sensors, ...d.sensors },
         weatherOverride: d.weatherOverride || s.weatherOverride,
         theme: d.theme || s.theme,
@@ -143,7 +145,12 @@ export function FarmProvider({ children }) {
       setState((s) => ({ ...s, farm: { ...s.farm, language } }));
     },
     user,
-    setUser,
+    setUser: (u) => {
+      setUser(u);
+      if (u?.name) {
+        setState((s) => ({ ...s, farm: { ...s.farm, farmer: u.name } }));
+      }
+    },
     addTask: (task) => {
       setState((s) => ({ ...s, tasks: [{ id: `t${Date.now()}`, done: false, ...task }, ...s.tasks] }));
       toast(tFn("ui.addedTasks"));
@@ -151,7 +158,7 @@ export function FarmProvider({ children }) {
     },
     saveFav: (payload) => {
       if (getToken()) dataApi.addFav({ kind: "recommendation", payload }).catch(() => {});
-      toast(tFn("ui.savedToast"));
+      toast("Saved");
     },
   };
 
