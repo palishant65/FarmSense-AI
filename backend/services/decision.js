@@ -84,9 +84,25 @@ const diseases = [
   { name: "Healthy canopy", crop: "Tomato", severity: "Low", conf: 91, symptoms: "Even green leaves", causes: "Good nutrition", actions: ["Continue drip schedule"] },
 ];
 
+export function imageSeed(src) {
+  const s = String(src || "");
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
 export function analyzeCropImage(meta = {}) {
-  const pick = diseases[Math.floor(Math.random() * diseases.length)];
-  return { at: Date.now(), ...pick, field: meta.field || "Field A — Tomato", disclaimer: "Advisory only. Confirm with a local agri officer before spraying." };
+  const seed = meta.seed != null ? Number(meta.seed) : imageSeed(meta.src || meta.fileName || `${meta.size || 0}`);
+  const pick = diseases[seed % diseases.length];
+  const conf = 72 + (seed % 21);
+  return {
+    at: Date.now(),
+    ...pick,
+    conf,
+    field: meta.field || "Field A — Tomato",
+    disclaimer: "Advisory only. Confirm with a local agri officer before spraying.",
+    seed,
+  };
 }
 
 const INTENT_RULES = [

@@ -29,7 +29,15 @@ export const soil = asyncHandler(async (req, res) => {
 });
 
 export const disease = asyncHandler(async (req, res) => {
-  const result = await diseaseDetection({ field: req.body.field, src: req.file?.filename });
+  if (!req.file && req.body?.src !== "demo") return fail(res, "image required", 422);
+  const seed = req.body?.seed != null ? Number(req.body.seed) : undefined;
+  const result = await diseaseDetection({
+    field: req.body.field,
+    src: req.file?.filename || req.body.src,
+    fileName: req.file?.originalname,
+    size: req.file?.size,
+    seed,
+  });
   if (req.file) result.image = `/uploads/${req.file.filename}`;
   const saved = await DiseaseReport.create({ user: req.user._id, ...result });
   await History.create({ user: req.user._id, kind: "disease", payload: result });
